@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { digify } from "@/api/digifyClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,8 +54,9 @@ function createInitialForm(initialJob) {
   };
 }
 
-export default function JobPostForm({ employer, user, initialJob = null, onClose, onSuccess }) {
+export default function JobPostForm({ employer, user, initialJob = null, autoFocusTitle = false, onClose, onSuccess }) {
   const { toast } = useToast();
+  const titleInputRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
   const [copyFromJobsIreland, setCopyFromJobsIreland] = useState(false);
   const [jobRef, setJobRef] = useState("");
@@ -69,6 +70,15 @@ export default function JobPostForm({ employer, user, initialJob = null, onClose
     setJobRef("");
     setScraped(false);
   }, [initialJob]);
+
+  useEffect(() => {
+    if (!autoFocusTitle || !titleInputRef.current) return;
+    const focusTimer = setTimeout(() => {
+      titleInputRef.current?.focus();
+      titleInputRef.current?.select?.();
+    }, 200);
+    return () => clearTimeout(focusTimer);
+  }, [autoFocusTitle, initialJob]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -206,7 +216,7 @@ export default function JobPostForm({ employer, user, initialJob = null, onClose
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2 sm:col-span-2">
               <Label>Job Title *</Label>
-              <Input value={form.title} onChange={(e) => update("title", e.target.value)} required />
+              <Input ref={titleInputRef} value={form.title} onChange={(e) => update("title", e.target.value)} required />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label>Short Description</Label>

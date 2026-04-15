@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { digify } from "@/api/digifyClient";
 import { Button } from "@/components/ui/button";
@@ -22,8 +22,10 @@ const statusIcons = {
 };
 
 export default function EmployerDashboard({ user, employer, setEmployer }) {
+  const navigate = useNavigate();
   const [showJobForm, setShowJobForm] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
+  const formContainerRef = useRef(null);
   const queryClient = useQueryClient();
 
   const { data: jobs = [] } = useQuery({
@@ -38,6 +40,11 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
 
   const activeJobs = jobs.filter((j) => j.status === "approved");
   const pendingJobs = jobs.filter((j) => j.status === "pending_review");
+
+  useEffect(() => {
+    if (!showJobForm || !editingJob || !formContainerRef.current) return;
+    formContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [showJobForm, editingJob]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -158,11 +165,12 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
             </div>
 
             {showJobForm && (
-              <div className="mb-6">
+              <div className="mb-6" ref={formContainerRef}>
                 <JobPostForm
                   employer={employer}
                   user={user}
                   initialJob={editingJob}
+                  autoFocusTitle={Boolean(editingJob)}
                   onClose={() => {
                     setShowJobForm(false);
                     setEditingJob(null);
@@ -199,6 +207,13 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
                         <Badge variant={job.status === "approved" ? "default" : "secondary"} className="text-xs">
                           {job.status?.replace("_", " ")}
                         </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/jobs/${job.id}`)}
+                        >
+                          View
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
