@@ -1,6 +1,15 @@
 {
   "users": [
     {
+      "id": "user_pvt55rj9",
+      "email": "usman@gianteyetech.com",
+      "password_hash": "$2b$10$mCN0PABkF/9PW7cIFJpZou.I8sdO8GIPPcS4oK77F6./fPYsOTU8i",
+      "full_name": "Usman Malik",
+      "role": "employee",
+      "created_date": "2026-04-15T13:31:49.418Z",
+      "updated_date": "2026-04-15T13:31:49.418Z"
+    },
+    {
       "id": "user_4c10arn1",
       "email": "lewis.gogarty@gianteyetech.com",
       "password_hash": "$2b$10$EPx/y9XRKJw4NPG9mSWSbua3P7USw0gi1zG972qqYh9Sjsbu7jl5C",
@@ -69,6 +78,48 @@
     }
   ],
   "Employee": [
+    {
+      "id": "employee_pcx69z1p",
+      "user_email": "usman@gianteyetech.com",
+      "first_name": "Usman",
+      "last_name": "Malik",
+      "phone": "+(353) (01) 833-2680",
+      "created_by": "usman@gianteyetech.com",
+      "created_date": "2026-04-15T13:32:15.023Z",
+      "updated_date": "2026-04-15T13:40:03.039Z",
+      "address": "223 Clontarf Road, Dublin",
+      "bio": "Software Engineer",
+      "date_of_birth": "1999-04-04",
+      "skills": [
+        "React.js",
+        "Vu.js",
+        "Node.js",
+        "Expess"
+      ],
+      "desired_job_type": "full_time",
+      "desired_location": "Dublin",
+      "availability": "negotiable",
+      "is_searchable": true,
+      "work_experience": [
+        {
+          "job_title": "Frontend Developer",
+          "company": "Giant Eye Tech",
+          "start_date": "2022-06-15",
+          "end_date": "2023-08-18",
+          "responsibilities": "UI Design"
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelrs",
+          "institution": "London School of Economic",
+          "start_date": "2018-03-15",
+          "end_date": "2026-04-15",
+          "description": ""
+        }
+      ],
+      "profile_completed": true
+    },
     {
       "id": "cand_1",
       "user_email": "liam.oconnor@gmail.com",
@@ -292,6 +343,22 @@
     }
   ],
   "Application": [
+    {
+      "id": "application_85186eyz",
+      "job_id": "job_gyfcai11",
+      "job_title": "Graphic Designer",
+      "employee_id": "employee_pcx69z1p",
+      "employee_name": "Usman Malik",
+      "employee_email": "usman@gianteyetech.com",
+      "employer_email": "sarah.murphy@lumenlabs.ie",
+      "company_name": "Lumen Labs",
+      "cover_letter": "I need this Job",
+      "cv_url": "",
+      "status": "submitted",
+      "created_by": "usman@gianteyetech.com",
+      "created_date": "2026-04-15T13:40:35.474Z",
+      "updated_date": "2026-04-15T13:40:35.474Z"
+    },
     {
       "id": "application_5jj12tnj",
       "job_id": "job_36ygzvoy",

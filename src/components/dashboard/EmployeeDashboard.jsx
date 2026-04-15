@@ -20,6 +20,18 @@ const statusIcons = {
 };
 
 export default function EmployeeDashboard({ user, employee, setEmployee }) {
+  const tabStorageKey = `jobsdirect_employee_dashboard_tab_${user.email}`;
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window === "undefined") return "applications";
+    const saved = window.sessionStorage.getItem(tabStorageKey);
+    return saved === "profile" ? "profile" : "applications";
+  });
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem(tabStorageKey, activeTab);
+  }, [tabStorageKey, activeTab]);
+
   const { data: applications = [] } = useQuery({
     queryKey: ["my-applications", user.email],
     queryFn: () => digify.entities.Application.filter({ employee_email: user.email }, "-created_date"),
@@ -91,7 +103,7 @@ export default function EmployeeDashboard({ user, employee, setEmployee }) {
           </Card>
         </div>
 
-        <Tabs defaultValue="applications">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="applications">My Applications</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
