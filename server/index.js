@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
+import * as cheerio from 'cheerio';
 import { fileURLToPath } from 'url';
 import { buildSeedData, nowIso } from './seed.js';
 
@@ -20,10 +21,6 @@ app.use(express.json({ limit: '2mb' }));
 
 function randomId(prefix) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function slugify(value = '') {
-  return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
 function ensureDb() {
@@ -98,6 +95,108 @@ function filterItems(items, query) {
   delete filters.order;
   delete filters.limit;
   return items.filter((item) => Object.entries(filters).every(([key, value]) => String(item?.[key]) === String(value)));
+}
+
+function collapseWhitespace(value = '') {
+  return String(value).replace(/\s+/g, ' ').trim();
+}
+
+function parseFirstNumber(value = '') {
+  const match = String(value).match(/(\d+(?:\.\d+)?)/);
+  return match ? Number(match[1]) : null;
+}
+
+function parseMoneyValues(value = '') {
+  const matches = [...String(value).matchAll(/(?:€|EUR|Euro)?\s*([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})(?:\.\d{1,2})?/gi)];
+  const nums = matches.map((match) => Number(match[1].replace(/,/g, ''))).filter(Number.isFinite);
+  if (!nums.length) return { min: null, max: null };
+  if (nums.length === 1) return { min: nums[0], max: nums[0] };
+  return { min: Math.min(...nums), max: Math.max(...nums) };
+}
+
+function inferSalaryPeriod(value = '') {
+  const normalized = String(value).toLowerCase();
+  if (/(annually|annual|per year|\/year|\bpa\b|p\.a)/i.test(normalized)) return 'annual';
+  if (/(monthly|per month|\/month)/i.test(normalized)) return 'monthly';
+  if (/(weekly|per week|\/week)/i.test(normalized)) return 'weekly';
+  if (/(hourly|per hour|\/hour)/i.test(normalized)) return 'hourly';
+  return null;
+}
+
+function extractCityTown(locationText = '') {
+  const parts = String(locationText)
+    .split(',')
+    .map((part) => collapseWhitespace(part))
+    .filter(Boolean);
+  if (!parts.length) return '';
+  const countyIndex = parts.findIndex((part) => /^co\.?\s+/i.test(part));
+  if (countyIndex > 0) return parts[countyIndex - 1];
+  const fallback = parts.find((part) => /^[A-Za-z][A-Za-z\s'.-]+$/.test(part) && !/^(co\.?|ireland)$/i.test(part));
+  return fallback || parts[parts.length - 1];
+}
+
+function extractEmail(value = '') {
+  const match = String(value).match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return match ? match[0] : '';
+}
+
+function extractJobsIrelandData(html, sourceUrl) {
+  const $ = cheerio.load(html);
+  const title = collapseWhitespace($('.job-details h3').first().text());
+  const description = collapseWhitespace($('.job-description pre').first().text());
+  const shortDescription = description ? description.slice(0, 200) : '';
+  const details = $('.job-details ul li')
+    .map((_, li) => ({
+      alt: collapseWhitespace($(li).find('img').attr('alt') || ''),
+      text: collapseWhitespace($(li).text()),
+    }))
+    .get()
+    .filter((item) => item.text);
+
+  const locationItem = details.find((item) => /location/i.test(item.alt)) || details.find((item) => /co\.\s|ireland/i.test(item.text));
+  const locationFull = locationItem?.text || '';
+  const cityTown = extractCityTown(locationFull);
+  const positionsItem = details.find((item) => /positions?/i.test(item.text));
+  const hoursItem = details.find((item) => /hours?\s*per\s*week/i.test(item.text));
+  const salaryItem = details.find((item) => /euro|€|salary/i.test(item.text));
+  const careerLevel = collapseWhitespace(
+    $('h4')
+      .filter((_, h4) => collapseWhitespace($(h4).text()).toLowerCase() === 'career level')
+      .first()
+      .nextAll('ul')
+      .first()
+      .find('li')
+      .first()
+      .text(),
+  );
+
+  const sourceText = `${description} ${salaryItem?.text || ''}`;
+  const salary = parseMoneyValues(sourceText);
+  const salaryPeriod = inferSalaryPeriod(sourceText);
+  const applicationEmail = extractEmail(description) || extractEmail($.root().text());
+  const payload = {
+    title,
+    description,
+    short_description: shortDescription,
+    location: cityTown || locationFull,
+    city_town: cityTown || null,
+    location_full: locationFull || null,
+    country: 'Ireland',
+    hours_per_week: parseFirstNumber(hoursItem?.text || ''),
+    positions_count: parseFirstNumber(positionsItem?.text || ''),
+    salary_min: salary.min,
+    salary_max: salary.max,
+    salary_type: salary.min || salary.max ? 'fixed' : null,
+    salary_period: salaryPeriod || null,
+    career_level: careerLevel || null,
+    application_email: applicationEmail || null,
+    application_method: applicationEmail ? 'email' : 'platform',
+    application_url: sourceUrl,
+    source_url: sourceUrl,
+  };
+
+  const hasCoreData = payload.title && payload.description;
+  return hasCoreData ? payload : null;
 }
 
 app.get('/api/health', (_req, res) => {
@@ -189,27 +288,45 @@ app.patch('/api/entities/:entity/:id', authRequired, (req, res) => {
   res.json(updated);
 });
 
-app.post('/api/functions/scrapeJobsIreland', authRequired, (req, res) => {
-  const ref = String(req.body?.ref || '0000000');
-  const titleSeed = Number(ref.slice(-2)) || 42;
-  const categories = ['technology', 'healthcare', 'finance', 'education', 'engineering', 'sales'];
-  const locations = ['Dublin', 'Cork', 'Galway', 'Limerick'];
-  const data = {
-    title: `Imported Role ${ref}`,
-    short_description: 'Imported from the JobsDirect.ie JobsIreland compatibility layer.',
-    description: `This is a server-side generated JobsDirect.ie import for JobsIreland reference ${ref}. Review the role details before publishing.`,
-    location: locations[titleSeed % locations.length],
-    job_type: titleSeed % 2 === 0 ? 'full_time' : 'contract',
-    category: categories[titleSeed % categories.length],
-    salary_min: 35000 + titleSeed * 100,
-    salary_max: 45000 + titleSeed * 150,
-    salary_period: 'annual',
-    benefits: 'Flexible working, pension contribution, learning stipend',
-    application_method: 'platform',
-    application_url: `https://jobsireland.ie/en-US/job-Details?id=${ref}`,
-    slug: slugify(`Imported Role ${ref}`),
-  };
-  res.json({ success: true, data, source_url: data.application_url });
+app.post('/api/functions/scrapeJobsIreland', authRequired, async (req, res) => {
+  const ref = String(req.body?.ref || '').trim();
+  if (!/^\d{6,10}$/.test(ref)) {
+    return res.status(400).json({ message: 'A valid numeric JobsIreland reference ID is required' });
+  }
+
+  const sourceUrl = `https://jobsireland.ie/en-US/job-Details?id=${encodeURIComponent(ref)}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    const response = await fetch(sourceUrl, {
+      method: 'GET',
+      redirect: 'follow',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'JobsDirect.ie Import Bot/1.0 (+https://jobsdirect.ie)',
+      },
+    });
+
+    if (!response.ok) {
+      return res.status(404).json({ message: `JobsIreland job not found for reference ${ref}` });
+    }
+
+    const html = await response.text();
+    const data = extractJobsIrelandData(html, sourceUrl);
+    if (!data) {
+      return res.status(422).json({ message: 'Could not extract job details from JobsIreland page' });
+    }
+
+    return res.json({ success: true, data, source_url: sourceUrl });
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      return res.status(504).json({ message: 'Timed out while contacting JobsIreland' });
+    }
+    return res.status(500).json({ message: 'Failed to import JobsIreland job data' });
+  } finally {
+    clearTimeout(timeout);
+  }
 });
 
 seedPasswords().then(() => {
