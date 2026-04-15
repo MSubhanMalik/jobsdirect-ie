@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { digify } from "@/api/digifyClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,51 +29,70 @@ const categories = [
   { value: "other", label: "Other" },
 ];
 
-export default function JobPostForm({ employer, user, onClose, onSuccess }) {
+function createInitialForm(initialJob) {
+  return {
+    title: initialJob?.title || "",
+    description: initialJob?.description || "",
+    short_description: initialJob?.short_description || "",
+    location: initialJob?.location || "",
+    country: initialJob?.country || "Ireland",
+    job_type: initialJob?.job_type || "full_time",
+    category: initialJob?.category || "technology",
+    hours_per_week: initialJob?.hours_per_week ?? "",
+    positions_count: initialJob?.positions_count ?? "",
+    salary_min: initialJob?.salary_min ?? "",
+    salary_max: initialJob?.salary_max ?? "",
+    salary_type: initialJob?.salary_type || "",
+    salary_period: initialJob?.salary_period || "annual",
+    career_level: initialJob?.career_level || "",
+    benefits: initialJob?.benefits || "",
+    application_method: initialJob?.application_method || "platform",
+    application_email: initialJob?.application_email || "",
+    application_url: initialJob?.application_url || "",
+    is_featured: Boolean(initialJob?.is_featured),
+    is_highlighted: Boolean(initialJob?.is_highlighted),
+  };
+}
+
+export default function JobPostForm({ employer, user, initialJob = null, onClose, onSuccess }) {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [copyFromJobsIreland, setCopyFromJobsIreland] = useState(false);
   const [jobRef, setJobRef] = useState("");
   const [scraping, setScraping] = useState(false);
   const [scraped, setScraped] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    short_description: "",
-    location: "",
-    country: "Ireland",
-    job_type: "full_time",
-    category: "technology",
-    hours_per_week: "",
-    positions_count: "",
-    salary_min: "",
-    salary_max: "",
-    salary_type: "",
-    salary_period: "annual",
-    career_level: "",
-    benefits: "",
-    application_method: "platform",
-    application_email: "",
-    application_url: "",
-    is_featured: false,
-    is_highlighted: false,
-  });
+  const [form, setForm] = useState(() => createInitialForm(initialJob));
+
+  useEffect(() => {
+    setForm(createInitialForm(initialJob));
+    setCopyFromJobsIreland(false);
+    setJobRef("");
+    setScraped(false);
+  }, [initialJob]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    await digify.entities.Job.create({
+    const payload = {
       ...form,
       salary_min: form.salary_min ? Number(form.salary_min) : undefined,
       salary_max: form.salary_max ? Number(form.salary_max) : undefined,
       company_name: employer.company_name,
       employer_id: employer.id,
-      status: "pending_review",
-      source: copyFromJobsIreland && scraped ? "jobsireland" : "manual",
-      jobsireland_ref: copyFromJobsIreland && scraped ? jobRef : undefined,
-    });
+      status: initialJob?.status || "pending_review",
+      source: copyFromJobsIreland && scraped ? "jobsireland" : (initialJob?.source || "manual"),
+      jobsireland_ref: copyFromJobsIreland && scraped ? jobRef : initialJob?.jobsireland_ref,
+    };
+    if (initialJob?.id) {
+      await digify.entities.Job.update(initialJob.id, payload);
+    } else {
+      await digify.entities.Job.create(payload);
+    }
     setSubmitting(false);
-    toast({ title: "Job Submitted", description: "Your job listing has been submitted for review." });
+    toast({
+      title: initialJob?.id ? "Job Updated" : "Job Submitted",
+      description: initialJob?.id ? "Your job listing has been updated." : "Your job listing has been submitted for review.",
+    });
     onSuccess();
   };
 
@@ -120,7 +139,7 @@ export default function JobPostForm({ employer, user, onClose, onSuccess }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-lg">Post a New Job</CardTitle>
+        <CardTitle className="text-lg">{initialJob?.id ? "Edit Job" : "Post a New Job"}</CardTitle>
         <Button variant="ghost" size="icon" onClick={onClose}><X className="w-4 h-4" /></Button>
       </CardHeader>
       <CardContent>
@@ -275,7 +294,7 @@ export default function JobPostForm({ employer, user, onClose, onSuccess }) {
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             <Button type="submit" className="bg-accent hover:bg-accent/90 text-accent-foreground" disabled={submitting}>
               <Send className="w-4 h-4 mr-2" />
-              {submitting ? "Submitting..." : "Submit for Review"}
+              {submitting ? (initialJob?.id ? "Saving..." : "Submitting...") : (initialJob?.id ? "Save Changes" : "Submit for Review")}
             </Button>
           </div>
         </form>

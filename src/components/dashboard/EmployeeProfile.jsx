@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { digify } from "@/api/digifyClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ export default function EmployeeProfile({ employee, setEmployee }) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
+    first_name: employee.first_name || "",
+    last_name: employee.last_name || "",
     phone: employee.phone || "",
     address: employee.address || "",
     bio: employee.bio || "",
@@ -27,6 +29,24 @@ export default function EmployeeProfile({ employee, setEmployee }) {
     education: employee.education || [],
   });
   const [newSkill, setNewSkill] = useState("");
+
+  useEffect(() => {
+    setForm({
+      first_name: employee.first_name || "",
+      last_name: employee.last_name || "",
+      phone: employee.phone || "",
+      address: employee.address || "",
+      bio: employee.bio || "",
+      date_of_birth: employee.date_of_birth || "",
+      skills: employee.skills || [],
+      desired_job_type: employee.desired_job_type || "full_time",
+      desired_location: employee.desired_location || "",
+      availability: employee.availability || "negotiable",
+      is_searchable: employee.is_searchable !== false,
+      work_experience: employee.work_experience || [],
+      education: employee.education || [],
+    });
+  }, [employee]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -64,6 +84,14 @@ export default function EmployeeProfile({ employee, setEmployee }) {
         <CardHeader><CardTitle className="text-lg">Personal Information</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>First Name</Label>
+              <Input value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Last Name</Label>
+              <Input value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+            </div>
             <div className="space-y-2">
               <Label>Phone</Label>
               <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />

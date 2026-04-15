@@ -23,6 +23,7 @@ const statusIcons = {
 
 export default function EmployerDashboard({ user, employer, setEmployer }) {
   const [showJobForm, setShowJobForm] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: jobs = [] } = useQuery({
@@ -143,8 +144,14 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
 
           <TabsContent value="jobs">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">Job Listings</h2>
-              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => setShowJobForm(true)}>
+              <h2 className="text-lg font-semibold">{editingJob ? "Edit Job" : "Job Listings"}</h2>
+              <Button
+                className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                onClick={() => {
+                  setEditingJob(null);
+                  setShowJobForm(true);
+                }}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Post a Job
               </Button>
@@ -155,9 +162,14 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
                 <JobPostForm
                   employer={employer}
                   user={user}
-                  onClose={() => setShowJobForm(false)}
+                  initialJob={editingJob}
+                  onClose={() => {
+                    setShowJobForm(false);
+                    setEditingJob(null);
+                  }}
                   onSuccess={() => {
                     setShowJobForm(false);
+                    setEditingJob(null);
                     queryClient.invalidateQueries({ queryKey: ["employer-jobs", user.email] });
                   }}
                 />
@@ -187,6 +199,16 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
                         <Badge variant={job.status === "approved" ? "default" : "secondary"} className="text-xs">
                           {job.status?.replace("_", " ")}
                         </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditingJob(job);
+                            setShowJobForm(true);
+                          }}
+                        >
+                          Edit
+                        </Button>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Eye className="w-3 h-3" />
                           {job.views_count || 0}
