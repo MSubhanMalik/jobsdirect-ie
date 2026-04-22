@@ -10,42 +10,47 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { Save, Plus, Trash2 } from "lucide-react";
 
-export default function EmployeeProfile({ employee, setEmployee }) {
-  const { toast } = useToast();
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
+function normalizeStringArray(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function normalizeObjectArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function createFormState(employee) {
+  return {
     first_name: employee.first_name || "",
     last_name: employee.last_name || "",
     phone: employee.phone || "",
     address: employee.address || "",
     bio: employee.bio || "",
     date_of_birth: employee.date_of_birth || "",
-    skills: employee.skills || [],
+    skills: normalizeStringArray(employee.skills),
     desired_job_type: employee.desired_job_type || "full_time",
     desired_location: employee.desired_location || "",
     availability: employee.availability || "negotiable",
     is_searchable: employee.is_searchable !== false,
-    work_experience: employee.work_experience || [],
-    education: employee.education || [],
-  });
+    work_experience: normalizeObjectArray(employee.work_experience),
+    education: normalizeObjectArray(employee.education),
+  };
+}
+
+export default function EmployeeProfile({ employee, setEmployee }) {
+  const { toast } = useToast();
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(() => createFormState(employee));
   const [newSkill, setNewSkill] = useState("");
 
   useEffect(() => {
-    setForm({
-      first_name: employee.first_name || "",
-      last_name: employee.last_name || "",
-      phone: employee.phone || "",
-      address: employee.address || "",
-      bio: employee.bio || "",
-      date_of_birth: employee.date_of_birth || "",
-      skills: employee.skills || [],
-      desired_job_type: employee.desired_job_type || "full_time",
-      desired_location: employee.desired_location || "",
-      availability: employee.availability || "negotiable",
-      is_searchable: employee.is_searchable !== false,
-      work_experience: employee.work_experience || [],
-      education: employee.education || [],
-    });
+    setForm(createFormState(employee));
   }, [employee]);
 
   const handleSave = async () => {
