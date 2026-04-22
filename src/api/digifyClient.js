@@ -39,12 +39,19 @@ async function apiFetch(path, options = {}) {
   return data;
 }
 
+function normalizeEntityListResponse(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
+}
+
 const createEntityApi = (entityName) => ({
   async list(order = '-created_date', limit) {
     const params = new URLSearchParams();
     params.set('order', order);
     if (typeof limit === 'number') params.set('limit', String(limit));
-    return apiFetch(`/api/entities/${entityName}?${params.toString()}`);
+    const data = await apiFetch(`/api/entities/${entityName}?${params.toString()}`);
+    return normalizeEntityListResponse(data);
   },
   async filter(filters = {}, order = '-created_date', limit) {
     const params = new URLSearchParams();
@@ -53,7 +60,8 @@ const createEntityApi = (entityName) => ({
       if (value !== undefined && value !== null) params.set(key, String(value));
     });
     if (typeof limit === 'number') params.set('limit', String(limit));
-    return apiFetch(`/api/entities/${entityName}?${params.toString()}`);
+    const data = await apiFetch(`/api/entities/${entityName}?${params.toString()}`);
+    return normalizeEntityListResponse(data);
   },
   async create(payload = {}) {
     return apiFetch(`/api/entities/${entityName}`, {

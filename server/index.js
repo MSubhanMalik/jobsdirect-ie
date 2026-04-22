@@ -10,7 +10,9 @@ import { buildSeedData, nowIso } from './seed.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_FILE = path.join(__dirname, 'db.json');
+const DATA_FILE = process.env.DATA_FILE
+  ? path.resolve(process.env.DATA_FILE)
+  : path.join(__dirname, 'db.json');
 const PORT = Number(process.env.PORT || 3001);
 const JWT_SECRET = process.env.JWT_SECRET || 'jobsdirect-dev-secret';
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
