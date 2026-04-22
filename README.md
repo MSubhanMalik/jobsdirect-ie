@@ -4,7 +4,8 @@ A standalone JobsDirect.ie app with:
 - React + Vite frontend
 - Express backend
 - Real email/password auth with JWT
-- File-based data store for quick local/client demos
+- File-based local development store
+- PostgreSQL support for live environments such as Railway
 
 ## Run locally
 
@@ -43,6 +44,34 @@ npm run server
 
 ## Notes
 
-- Data is stored in `server/db.json`
+- Local mode can store data in `server/db.json`
+- Live mode can use PostgreSQL with `DATA_PROVIDER=postgres`
 - JWT secret can be changed with `JWT_SECRET`
 - Vite proxies `/api` to `http://localhost:3001`
+
+## Storage Modes
+
+### Local file mode
+
+Use:
+
+```bash
+DATA_PROVIDER=file
+DATA_FILE=server/db.json
+```
+
+### PostgreSQL mode
+
+Use:
+
+```bash
+DATA_PROVIDER=postgres
+DATABASE_URL=postgresql://...
+DATABASE_SSL=false
+```
+
+If your database provider requires SSL, set:
+
+```bash
+DATABASE_SSL=true
+```
