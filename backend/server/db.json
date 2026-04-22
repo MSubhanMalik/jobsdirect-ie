@@ -171,10 +171,30 @@
       "location": "Dublin",
       "bio": "React developer with 4 years of experience building polished product experiences.",
       "profile_completed": true,
-      "skills": "React, TypeScript, Tailwind CSS",
+      "skills": [
+        "React",
+        "TypeScript",
+        "Tailwind CSS"
+      ],
       "experience_years": 4,
       "created_date": "2026-04-15T08:26:19.544Z",
-      "updated_date": "2026-04-15T08:26:19.544Z"
+      "updated_date": "2026-04-22T16:30:03.204Z",
+      "address": "Dublin, I reland",
+      "date_of_birth": "1999-05-11",
+      "desired_job_type": "full_time",
+      "desired_location": "",
+      "availability": "negotiable",
+      "is_searchable": true,
+      "work_experience": [],
+      "education": [
+        {
+          "degree": "Masters",
+          "institution": "London School of Economics",
+          "start_date": "2018-01-01",
+          "end_date": "2021-12-31",
+          "description": ""
+        }
+      ]
     }
   ],
   "Job": [
@@ -430,6 +450,22 @@
     }
   ],
   "Application": [
+    {
+      "id": "application_l4h1z6lt",
+      "job_id": "job_2",
+      "job_title": "Operations Coordinator",
+      "employee_id": "cand_1",
+      "employee_name": "Liam O'Connor",
+      "employee_email": "liam.oconnor@gmail.com",
+      "employer_email": "sarah.murphy@lumenlabs.ie",
+      "company_name": "Northline Services",
+      "cover_letter": "Applying for this Job",
+      "cv_url": "",
+      "status": "submitted",
+      "created_by": "liam.oconnor@gmail.com",
+      "created_date": "2026-04-22T16:28:14.437Z",
+      "updated_date": "2026-04-22T16:28:14.437Z"
+    },
     {
       "id": "application_dz7526w4",
       "job_id": "job_9y0737pc",
