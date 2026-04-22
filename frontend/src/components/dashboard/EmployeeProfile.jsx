@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
+import { getAdultDateMax, isAtLeast18 } from "@/lib/age";
 import { Save, Plus, Trash2 } from "lucide-react";
 
 function normalizeStringArray(value) {
@@ -48,12 +49,22 @@ export default function EmployeeProfile({ employee, setEmployee }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(() => createFormState(employee));
   const [newSkill, setNewSkill] = useState("");
+  const maxDateOfBirth = getAdultDateMax();
 
   useEffect(() => {
     setForm(createFormState(employee));
   }, [employee]);
 
   const handleSave = async () => {
+    if (!isAtLeast18(form.date_of_birth)) {
+      toast({
+        title: "Invalid Date of Birth",
+        description: "Employee profile users must be at least 18 years old.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
     await digify.entities.Employee.update(employee.id, { ...form, profile_completed: true });
     setEmployee({ ...employee, ...form, profile_completed: true });
@@ -103,7 +114,12 @@ export default function EmployeeProfile({ employee, setEmployee }) {
             </div>
             <div className="space-y-2">
               <Label>Date of Birth</Label>
-              <Input type="date" value={form.date_of_birth} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} />
+              <Input
+                type="date"
+                max={maxDateOfBirth}
+                value={form.date_of_birth}
+                onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })}
+              />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label>Address</Label>
