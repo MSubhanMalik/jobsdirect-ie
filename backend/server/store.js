@@ -274,6 +274,11 @@ function createPostgresStore() {
       `);
 
       await query(`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT FALSE
+      `);
+
+      await query(`
         CREATE TABLE IF NOT EXISTS entity_records (
           entity_name TEXT NOT NULL,
           record_id TEXT NOT NULL,
@@ -304,6 +309,15 @@ function createPostgresStore() {
       `);
 
       await seedUsersIfNeeded();
+
+      // Backfill legacy users created before email verification existed.
+      // If they have no pending verification record, treat them as already verified.
+      await query(`
+        UPDATE users
+        SET email_verified = TRUE, updated_date = NOW()
+        WHERE email_verified = FALSE
+          AND email NOT IN (SELECT email FROM email_verifications)
+      `);
     },
     async findUserById(id) {
       const result = await query('SELECT * FROM users WHERE id = $1 LIMIT 1', [id]);
