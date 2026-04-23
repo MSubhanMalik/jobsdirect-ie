@@ -3,7 +3,7 @@ import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import * as cheerio from 'cheerio';
-import { createStore, publicUser, randomId } from './store.js';
+import { createStore, publicUser, randomId, randomToken } from './store.js';
 import { nowIso } from './seed.js';
 
 const PORT = Number(process.env.PORT || 3001);
@@ -38,6 +38,25 @@ async function authRequired(req, res, next) {
 
 function collapseWhitespace(value = '') {
   return String(value).replace(/\s+/g, ' ').trim();
+}
+
+function addMinutes(date, minutes) {
+  return new Date(date.getTime() + minutes * 60 * 1000);
+}
+
+function generateVerificationCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function deriveNameFromEmail(email = '') {
+  const localPart = String(email).split('@')[0] || 'User';
+  const cleaned = localPart.replace(/[._-]+/g, ' ').trim();
+  if (!cleaned) return 'User';
+  return cleaned
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }
 
 function parseFirstNumber(value = '') {
@@ -147,9 +166,11 @@ app.get('/api/health', (_req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   const { full_name, email, password, role = 'employee' } = req.body || {};
   const normalizedEmail = String(email || '').trim().toLowerCase();
+  const safeRole = role === 'employer' ? 'employer' : 'employee';
+  const normalizedFullName = String(full_name || '').trim() || deriveNameFromEmail(normalizedEmail);
 
-  if (!normalizedEmail || !password || !full_name) {
-    return res.status(400).json({ message: 'Full name, email, and password are required' });
+  if (!normalizedEmail || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
   }
 
   const existing = await store.findUserByEmail(normalizedEmail);
@@ -159,14 +180,32 @@ app.post('/api/auth/register', async (req, res) => {
     id: randomId('user'),
     email: normalizedEmail,
     password_hash: await bcrypt.hash(password, 10),
-    full_name: full_name.trim(),
-    role,
+    full_name: normalizedFullName,
+    role: safeRole,
+    email_verified: false,
     created_date: nowIso(),
     updated_date: nowIso(),
   };
 
   await store.createUser(user);
-  res.status(201).json({ token: signToken(user), user: publicUser(user) });
+  const code = generateVerificationCode();
+  const expiresAt = addMinutes(new Date(), 15).toISOString();
+
+  await store.createEmailVerification({
+    email: normalizedEmail,
+    code,
+    expires_at: expiresAt,
+    created_date: nowIso(),
+  });
+
+  res.status(201).json({
+    verification_required: true,
+    user: publicUser(user),
+    email: normalizedEmail,
+    expires_at: expiresAt,
+    message: 'Verification code sent to your email.',
+    demo_verification_code: code,
+  });
 });
 
 app.post('/api/auth/login', async (req, res) => {
@@ -177,8 +216,86 @@ app.post('/api/auth/login', async (req, res) => {
   if (!user) return res.status(401).json({ message: 'Invalid email or password' });
   const ok = await bcrypt.compare(String(password || ''), user.password_hash || '');
   if (!ok) return res.status(401).json({ message: 'Invalid email or password' });
+  if (!user.email_verified) {
+    return res.status(403).json({
+      message: 'Please verify your email before signing in.',
+      code: 'EMAIL_NOT_VERIFIED',
+      email: user.email,
+    });
+  }
 
   res.json({ token: signToken(user), user: publicUser(user) });
+});
+
+app.post('/api/auth/verify-email', async (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const code = String(req.body?.code || '').trim();
+
+  if (!email || !code) {
+    return res.status(400).json({ message: 'Email and verification code are required' });
+  }
+
+  const user = await store.findUserByEmail(email);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  const verification = await store.findEmailVerification(email);
+  if (!verification) {
+    return res.status(400).json({ message: 'No active verification code found' });
+  }
+
+  if (new Date(verification.expires_at).getTime() < Date.now()) {
+    await store.deleteEmailVerification(email);
+    return res.status(400).json({ message: 'Verification code has expired' });
+  }
+
+  if (verification.code !== code) {
+    return res.status(400).json({ message: 'Invalid verification code' });
+  }
+
+  const updatedUser = await store.updateUser(email, { email_verified: true });
+  await store.deleteEmailVerification(email);
+
+  return res.json({
+    success: true,
+    message: 'Email verified successfully.',
+    token: signToken(updatedUser),
+    user: publicUser(updatedUser),
+  });
+});
+
+app.post('/api/auth/resend-verification', async (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  const user = await store.findUserByEmail(email);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  if (user.email_verified) {
+    return res.status(400).json({ message: 'Email is already verified' });
+  }
+
+  const code = generateVerificationCode();
+  const expiresAt = addMinutes(new Date(), 15).toISOString();
+  await store.createEmailVerification({
+    email,
+    code,
+    expires_at: expiresAt,
+    created_date: nowIso(),
+  });
+
+  return res.json({
+    success: true,
+    message: 'Verification code sent to your email.',
+    email,
+    expires_at: expiresAt,
+    demo_verification_code: code,
+  });
 });
 
 app.get('/api/auth/me', authRequired, (req, res) => {
@@ -187,6 +304,77 @@ app.get('/api/auth/me', authRequired, (req, res) => {
 
 app.post('/api/auth/logout', (_req, res) => {
   res.json({ success: true });
+});
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  const user = await store.findUserByEmail(email);
+  if (!user) {
+    return res.json({
+      success: true,
+      message: 'If an account exists for that email, password reset instructions have been generated.',
+    });
+  }
+
+  const token = randomToken();
+  const expiresAt = addMinutes(new Date(), 30).toISOString();
+  await store.createPasswordReset({
+    token,
+    email,
+    expires_at: expiresAt,
+    created_date: nowIso(),
+  });
+
+  return res.json({
+    success: true,
+    message: 'Password reset instructions have been generated.',
+    reset_token: token,
+    expires_at: expiresAt,
+  });
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  const token = String(req.body?.token || '').trim();
+  const password = String(req.body?.password || '');
+
+  if (!token || !password) {
+    return res.status(400).json({ message: 'Reset token and new password are required' });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+  }
+
+  const resetRecord = await store.findPasswordResetByToken(token);
+  if (!resetRecord) {
+    return res.status(400).json({ message: 'Invalid or expired reset token' });
+  }
+
+  if (new Date(resetRecord.expires_at).getTime() < Date.now()) {
+    await store.deletePasswordResetByToken(token);
+    return res.status(400).json({ message: 'Reset token has expired' });
+  }
+
+  const user = await store.updateUserPassword(
+    resetRecord.email,
+    await bcrypt.hash(password, 10),
+  );
+
+  await store.deletePasswordResetByToken(token);
+  await store.deletePasswordResetsByEmail(resetRecord.email);
+
+  if (!user) {
+    return res.status(404).json({ message: 'User account no longer exists' });
+  }
+
+  return res.json({
+    success: true,
+    message: 'Password updated successfully',
+  });
 });
 
 app.get('/api/entities/:entity', async (req, res) => {

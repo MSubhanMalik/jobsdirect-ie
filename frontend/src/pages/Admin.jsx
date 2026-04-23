@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { digify } from "@/api/digifyClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,18 +11,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  Briefcase, Building2, Users, Mail, CheckCircle, XCircle,
-  Clock, Eye, CreditCard, LogOut, Shield, MessageSquare
+  Briefcase, Building2, Users, CheckCircle, XCircle,
+  Clock, LogOut, Shield, MessageSquare
 } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [rejectDialog, setRejectDialog] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [employerRejectDialog, setEmployerRejectDialog] = useState(null);
+  const [employerRejectReason, setEmployerRejectReason] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -30,7 +31,6 @@ export default function Admin() {
       if (!authed) { digify.auth.redirectToLogin("/admin"); return; }
       const me = await digify.auth.me();
       if (me.role !== "admin") { navigate("/dashboard"); return; }
-      setUser(me);
       setLoading(false);
     };
     load();
@@ -83,9 +83,25 @@ export default function Admin() {
   };
 
   const approveEmployer = async (emp) => {
-    await digify.entities.Employer.update(emp.id, { verification_status: "approved" });
+    await digify.entities.Employer.update(emp.id, {
+      verification_status: "approved",
+      admin_review_note: "",
+      approved_at: new Date().toISOString(),
+    });
     queryClient.invalidateQueries({ queryKey: ["admin-employers"] });
-    toast({ title: "Employer Verified", description: `${emp.company_name} has been approved.` });
+    toast({ title: "Employer Approved", description: `${emp.company_name} now has full access.` });
+  };
+
+  const rejectEmployer = async () => {
+    await digify.entities.Employer.update(employerRejectDialog.id, {
+      verification_status: "rejected",
+      admin_review_note: employerRejectReason,
+      approved_at: null,
+    });
+    queryClient.invalidateQueries({ queryKey: ["admin-employers"] });
+    setEmployerRejectDialog(null);
+    setEmployerRejectReason("");
+    toast({ title: "Employer Rejected" });
   };
 
   if (loading) {
@@ -98,10 +114,10 @@ export default function Admin() {
   }
 
   const approvedJobs = allJobs.filter((j) => j.status === "approved");
+  const pendingEmployers = employers.filter((emp) => emp.verification_status === "pending" || emp.verification_status === "submitted");
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="bg-primary text-primary-foreground py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -113,19 +129,19 @@ export default function Admin() {
               </div>
             </div>
             <Button variant="ghost" className="text-primary-foreground/60" onClick={() => digify.auth.logout("/")}>
-              <LogOut className="w-4 h-4 mr-2" />Logout
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
             </Button>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           {[
             { icon: Clock, label: "Pending Jobs", value: pendingJobs.length, color: "text-yellow-500" },
             { icon: Briefcase, label: "Active Jobs", value: approvedJobs.length, color: "text-accent" },
-            { icon: Building2, label: "Employers", value: employers.length, color: "text-primary" },
+            { icon: Building2, label: "Pending Employers", value: pendingEmployers.length, color: "text-primary" },
             { icon: Users, label: "Employees", value: employees.length, color: "text-accent" },
             { icon: MessageSquare, label: "Messages", value: messages.filter((m) => m.status === "new").length, color: "text-primary" },
           ].map((s) => (
@@ -148,12 +164,14 @@ export default function Admin() {
               {pendingJobs.length > 0 && <Badge className="ml-2 bg-yellow-500 text-white text-xs">{pendingJobs.length}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="jobs">All Jobs</TabsTrigger>
-            <TabsTrigger value="employers">Employers</TabsTrigger>
+            <TabsTrigger value="employers">
+              Employers
+              {pendingEmployers.length > 0 && <Badge className="ml-2 text-xs">{pendingEmployers.length}</Badge>}
+            </TabsTrigger>
             <TabsTrigger value="employees">Employees</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
           </TabsList>
 
-          {/* Pending Jobs */}
           <TabsContent value="pending">
             <div className="space-y-3">
               {pendingJobs.length === 0 ? (
@@ -170,10 +188,12 @@ export default function Admin() {
                         </div>
                         <div className="flex gap-2 shrink-0">
                           <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => approveJob(job)}>
-                            <CheckCircle className="w-4 h-4 mr-1" />Approve
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Approve
                           </Button>
                           <Button size="sm" variant="outline" className="text-destructive" onClick={() => setRejectDialog(job)}>
-                            <XCircle className="w-4 h-4 mr-1" />Reject
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Reject
                           </Button>
                         </div>
                       </div>
@@ -184,7 +204,6 @@ export default function Admin() {
             </div>
           </TabsContent>
 
-          {/* All Jobs */}
           <TabsContent value="jobs">
             <div className="space-y-3">
               {allJobs.map((job) => (
@@ -203,22 +222,29 @@ export default function Admin() {
             </div>
           </TabsContent>
 
-          {/* Employers */}
           <TabsContent value="employers">
             <div className="space-y-3">
               {employers.map((emp) => (
                 <Card key={emp.id}>
-                  <CardContent className="p-4 flex items-center justify-between">
+                  <CardContent className="p-4 flex items-center justify-between gap-4">
                     <div>
                       <p className="font-medium text-sm">{emp.company_name}</p>
                       <p className="text-xs text-muted-foreground">{emp.first_name} {emp.last_name} · {emp.user_email}</p>
+                      {emp.admin_review_note && (
+                        <p className="text-xs text-muted-foreground mt-1">Reason: {emp.admin_review_note}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={emp.verification_status === "approved" ? "default" : "secondary"} className="text-xs capitalize">
-                        {emp.verification_status}
+                        {emp.verification_status || "draft"}
                       </Badge>
                       {emp.verification_status !== "approved" && (
-                        <Button size="sm" variant="outline" onClick={() => approveEmployer(emp)}>Verify</Button>
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => approveEmployer(emp)}>Approve</Button>
+                          <Button size="sm" variant="outline" className="text-destructive" onClick={() => setEmployerRejectDialog(emp)}>
+                            Reject
+                          </Button>
+                        </>
                       )}
                     </div>
                   </CardContent>
@@ -227,7 +253,6 @@ export default function Admin() {
             </div>
           </TabsContent>
 
-          {/* Employees */}
           <TabsContent value="employees">
             <div className="space-y-3">
               {employees.map((emp) => (
@@ -246,7 +271,6 @@ export default function Admin() {
             </div>
           </TabsContent>
 
-          {/* Messages */}
           <TabsContent value="messages">
             <div className="space-y-3">
               {messages.length === 0 ? (
@@ -272,7 +296,6 @@ export default function Admin() {
         </Tabs>
       </div>
 
-      {/* Reject Dialog */}
       <Dialog open={!!rejectDialog} onOpenChange={(open) => { if (!open) setRejectDialog(null); }}>
         <DialogContent>
           <DialogHeader>
@@ -287,6 +310,26 @@ export default function Admin() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectDialog(null)}>Cancel</Button>
             <Button variant="destructive" onClick={rejectJob}>Reject</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!employerRejectDialog} onOpenChange={(open) => { if (!open) setEmployerRejectDialog(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Employer: {employerRejectDialog?.company_name}</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            placeholder="Reason for rejection..."
+            value={employerRejectReason}
+            onChange={(e) => setEmployerRejectReason(e.target.value)}
+            className="min-h-[100px]"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmployerRejectDialog(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={rejectEmployer} disabled={!employerRejectReason.trim()}>
+              Reject
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

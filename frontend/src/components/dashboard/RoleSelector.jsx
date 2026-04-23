@@ -8,7 +8,8 @@ import { Building2, User, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function RoleSelector({ user, onCreated }) {
-  const [selected, setSelected] = useState(null);
+  const defaultRole = user?.role === "employer" || user?.role === "employee" ? user.role : null;
+  const [selected, setSelected] = useState(defaultRole);
   const [form, setForm] = useState({
     first_name: user?.full_name?.split(" ")[0] || "",
     last_name: user?.full_name?.split(" ").slice(1).join(" ") || "",
@@ -26,6 +27,8 @@ export default function RoleSelector({ user, onCreated }) {
         last_name: form.last_name,
         company_name: form.company_name,
         phone: form.phone,
+        verification_status: "draft",
+        admin_review_note: "",
       });
       onCreated("employer", employer);
     } else {

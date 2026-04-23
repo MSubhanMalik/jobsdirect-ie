@@ -1,13 +1,84 @@
 {
   "users": [
     {
+      "id": "user_et8dqmlp",
+      "email": "karegar.cloth@gmail.com",
+      "password_hash": "$2b$10$hi.GeggobVYMG8Ik6.8xS.Wd6x4RON35FTV2uaphSpNUBqWcM/Eo6",
+      "full_name": "Karegar Cloth",
+      "role": "employer",
+      "email_verified": true,
+      "created_date": "2026-04-23T12:34:56.073Z",
+      "updated_date": "2026-04-23T12:35:06.026Z"
+    },
+    {
+      "id": "user_9oszkdjp",
+      "email": "anaya.aamir@gmail.com",
+      "password_hash": "$2b$10$nRNImBzgZMeNDuv86Qjasuq5Lw1Yej8AwiG4ZW/hsq7j2v/dA4mKO",
+      "full_name": "Anaya Aamir",
+      "role": "employee",
+      "email_verified": true,
+      "created_date": "2026-04-23T10:41:37.797Z",
+      "updated_date": "2026-04-23T10:41:46.292Z"
+    },
+    {
+      "id": "user_4hdlw0eh",
+      "email": "nawaz.sharif@gmail.com",
+      "password_hash": "$2b$10$BSzuyzvUnBgufrLWjvQ9euVsqVuLtcQt4Ptc5LPQ/dbim4BlLzKci",
+      "full_name": "Nawaz Sharif",
+      "role": "employer",
+      "email_verified": true,
+      "created_date": "2026-04-23T10:34:33.020Z",
+      "updated_date": "2026-04-23T10:34:42.927Z"
+    },
+    {
+      "id": "user_nagjr8p5",
+      "email": "nano.khan@hotmail.com",
+      "password_hash": "$2b$10$o8RGT89fLB.VTVsnTT2b3e2RtrjAbIg5/azwaHx7ZVV.LV5R2p31e",
+      "full_name": "Nano Khan",
+      "role": "employer",
+      "email_verified": true,
+      "created_date": "2026-04-23T10:30:41.187Z",
+      "updated_date": "2026-04-23T10:30:53.901Z"
+    },
+    {
+      "id": "user_4shffdxc",
+      "email": "usman.malik@gianteyetech.com",
+      "password_hash": "$2b$10$SWFfYFa7ceTx3hQjM8xc9.c5exb0jfbvy/SWReMMn7VIE2TOSy78K",
+      "full_name": "Usman Malik",
+      "role": "employer",
+      "created_date": "2026-04-23T09:58:17.518Z",
+      "updated_date": "2026-04-23T09:58:17.518Z",
+      "email_verified": true
+    },
+    {
+      "id": "user_rzqpiedo",
+      "email": "khan.muhammad@jobsireland.ie",
+      "password_hash": "$2b$10$uV5bG58vEr3PRLM/ai2GQ.3mpZ8sMsZgV3wJS3yiEFhi1ojpwmZBu",
+      "full_name": "Khan Muhammad",
+      "role": "employer",
+      "created_date": "2026-04-22T19:29:45.552Z",
+      "updated_date": "2026-04-22T19:29:45.552Z",
+      "email_verified": true
+    },
+    {
+      "id": "user_621qtm1z",
+      "email": "aryaan.smith@infox.ie",
+      "password_hash": "$2b$10$xNHd656kO2S1WHYddbcbtuMPw3f1AkV2OAelC8AO1UjeIGYIhk2Rm",
+      "full_name": "Aryaan",
+      "role": "employer",
+      "created_date": "2026-04-22T19:08:13.801Z",
+      "updated_date": "2026-04-22T19:08:13.801Z",
+      "email_verified": true
+    },
+    {
       "id": "user_zxjl3kp5",
       "email": "donald.trump@gianteyetech.com",
       "password_hash": "$2b$10$NaAxAaZsE0wISqhgpa/4suGJk7oxZcuNM5PfySrW1rRJMbyWfpSCW",
       "full_name": "Donald Trump",
       "role": "employee",
       "created_date": "2026-04-15T15:37:50.842Z",
-      "updated_date": "2026-04-15T15:37:50.842Z"
+      "updated_date": "2026-04-15T15:37:50.842Z",
+      "email_verified": true
     },
     {
       "id": "user_pvt55rj9",
@@ -16,7 +87,8 @@
       "full_name": "Usman Malik",
       "role": "employee",
       "created_date": "2026-04-15T13:31:49.418Z",
-      "updated_date": "2026-04-15T13:31:49.418Z"
+      "updated_date": "2026-04-15T13:31:49.418Z",
+      "email_verified": true
     },
     {
       "id": "user_4c10arn1",
@@ -25,7 +97,8 @@
       "full_name": "Lewis Gogarty",
       "role": "employer",
       "created_date": "2026-04-15T09:36:03.286Z",
-      "updated_date": "2026-04-15T09:36:03.286Z"
+      "updated_date": "2026-04-15T09:36:03.286Z",
+      "email_verified": true
     },
     {
       "id": "user_admin",
@@ -34,7 +107,8 @@
       "full_name": "JobsDirect Admin",
       "role": "admin",
       "created_date": "2026-04-15T08:26:19.544Z",
-      "updated_date": "2026-04-15T08:26:19.544Z"
+      "updated_date": "2026-04-15T08:26:19.544Z",
+      "email_verified": true
     },
     {
       "id": "user_employer",
@@ -43,7 +117,8 @@
       "full_name": "Sarah Murphy",
       "role": "employer",
       "created_date": "2026-04-15T08:26:19.544Z",
-      "updated_date": "2026-04-15T08:26:19.544Z"
+      "updated_date": "2026-04-15T08:26:19.544Z",
+      "email_verified": true
     },
     {
       "id": "user_employee",
@@ -52,10 +127,78 @@
       "full_name": "Liam O'Connor",
       "role": "employee",
       "created_date": "2026-04-15T08:26:19.544Z",
-      "updated_date": "2026-04-15T08:26:19.544Z"
+      "updated_date": "2026-04-15T08:26:19.544Z",
+      "email_verified": true
     }
   ],
   "Employer": [
+    {
+      "id": "employer_9iaouz9a",
+      "user_email": "karegar.cloth@gmail.com",
+      "first_name": "Karegar",
+      "last_name": "Cloth",
+      "company_name": "Karegar Clothing",
+      "phone": "",
+      "verification_status": "draft",
+      "admin_review_note": "",
+      "created_by": "karegar.cloth@gmail.com",
+      "created_date": "2026-04-23T12:35:06.078Z",
+      "updated_date": "2026-04-23T12:36:18.121Z",
+      "date_of_birth": "2001-03-12",
+      "website": "",
+      "cro_number": "",
+      "employer_number": ""
+    },
+    {
+      "id": "employer_apmgubjc",
+      "user_email": "nawaz.sharif@gmail.com",
+      "first_name": "Nawaz",
+      "last_name": "Sharif",
+      "company_name": "Ittefaq Foundry",
+      "phone": "+353121212122",
+      "verification_status": "pending",
+      "admin_review_note": "",
+      "created_by": "nawaz.sharif@gmail.com",
+      "created_date": "2026-04-23T10:34:42.954Z",
+      "updated_date": "2026-04-23T10:36:51.487Z",
+      "date_of_birth": "1951-02-28",
+      "website": "pmln.org.pk",
+      "cro_number": "343243334",
+      "employer_number": "1992",
+      "approval_submitted_at": "2026-04-23T10:36:51.480Z"
+    },
+    {
+      "id": "employer_2jsw1bgp",
+      "user_email": "khan.muhammad@jobsireland.ie",
+      "first_name": "Khan",
+      "last_name": "Muhammad",
+      "company_name": "ABC Ent.",
+      "phone": "+353 12323232",
+      "created_by": "khan.muhammad@jobsireland.ie",
+      "created_date": "2026-04-22T19:30:32.207Z",
+      "updated_date": "2026-04-22T19:48:49.532Z",
+      "date_of_birth": "2005-11-25",
+      "website": "",
+      "cro_number": "",
+      "employer_number": "",
+      "verification_status": "approved"
+    },
+    {
+      "id": "employer_wjjdihmf",
+      "user_email": "aryaan.smith@infox.ie",
+      "first_name": "Aryaan Gold",
+      "last_name": "Smith",
+      "company_name": "GET International",
+      "phone": "+35311 22 33 44",
+      "created_by": "aryaan.smith@infox.ie",
+      "created_date": "2026-04-22T19:08:54.178Z",
+      "updated_date": "2026-04-22T19:48:48.114Z",
+      "date_of_birth": "2008-04-01",
+      "website": "",
+      "cro_number": "",
+      "employer_number": "",
+      "verification_status": "approved"
+    },
     {
       "id": "employer_pyef7pcz",
       "user_email": "lewis.gogarty@gianteyetech.com",
@@ -80,13 +223,25 @@
       "phone": "+353 87 555 2222",
       "verification_status": "approved",
       "created_date": "2026-04-15T08:26:19.544Z",
-      "updated_date": "2026-04-22T06:28:15.415Z",
+      "updated_date": "2026-04-22T19:06:44.122Z",
       "website": "https:/gianteyetech.com",
       "cro_number": "92929292",
-      "employer_number": "23031947"
+      "employer_number": "23031947",
+      "date_of_birth": "1979-05-23"
     }
   ],
   "Employee": [
+    {
+      "id": "employee_9sva11lm",
+      "user_email": "anaya.aamir@gmail.com",
+      "first_name": "Anaya",
+      "last_name": "Aamir",
+      "phone": "",
+      "profile_completed": false,
+      "created_by": "anaya.aamir@gmail.com",
+      "created_date": "2026-04-23T10:41:46.314Z",
+      "updated_date": "2026-04-23T10:41:46.314Z"
+    },
     {
       "id": "employee_hluzofow",
       "user_email": "donald.trump@gianteyetech.com",
@@ -451,6 +606,22 @@
   ],
   "Application": [
     {
+      "id": "application_6lktxop6",
+      "job_id": "job_9y0737pc",
+      "job_title": "Motor Mechanics",
+      "employee_id": "employee_9sva11lm",
+      "employee_name": "Anaya Aamir",
+      "employee_email": "anaya.aamir@gmail.com",
+      "employer_email": "sarah.murphy@lumenlabs.ie",
+      "company_name": "Lumen Labs",
+      "cover_letter": "I am a Professional Motor Mechanic",
+      "cv_url": "",
+      "status": "submitted",
+      "created_by": "anaya.aamir@gmail.com",
+      "created_date": "2026-04-23T10:42:21.524Z",
+      "updated_date": "2026-04-23T10:42:21.524Z"
+    },
+    {
       "id": "application_l4h1z6lt",
       "job_id": "job_2",
       "job_title": "Operations Coordinator",
@@ -550,5 +721,14 @@
       "created_date": "2026-04-15T08:26:19.544Z",
       "updated_date": "2026-04-15T08:26:19.544Z"
     }
-  ]
+  ],
+  "password_resets": [
+    {
+      "token": "6e41560745680a000bafc04b014d7e1346eb4640346f43c9",
+      "email": "sarah.murphy@lumenlabs.ie",
+      "expires_at": "2026-04-22T19:51:25.576Z",
+      "created_date": "2026-04-22T19:21:25.576Z"
+    }
+  ],
+  "email_verifications": []
 }

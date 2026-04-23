@@ -34,6 +34,7 @@ async function apiFetch(path, options = {}) {
   if (!response.ok) {
     const error = new Error(data.message || 'Request failed');
     error.status = response.status;
+    Object.assign(error, data);
     throw error;
   }
   return data;
@@ -104,12 +105,36 @@ const auth = {
     return result.user;
   },
   async register({ full_name, email, password, role }) {
-    const result = await apiFetch('/api/auth/register', {
+    return apiFetch('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({ full_name, email, password, role }),
     });
+  },
+  async verifyEmail({ email, code }) {
+    const result = await apiFetch('/api/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    });
     writeSession(result);
     return result.user;
+  },
+  async resendVerification({ email }) {
+    return apiFetch('/api/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+  async forgotPassword({ email }) {
+    return apiFetch('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+  async resetPassword({ token, password }) {
+    return apiFetch('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    });
   },
   async logout(redirectTo = '/') {
     try {

@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import pg from 'pg';
@@ -14,6 +15,10 @@ const DEFAULT_PASSWORDS = {
 
 export function randomId(prefix) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function randomToken(bytes = 24) {
+  return crypto.randomBytes(bytes).toString('hex');
 }
 
 function sortItems(items, order = '-created_date') {
@@ -58,6 +63,8 @@ function createFileStore() {
     }
     const parsed = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
     if (!Array.isArray(parsed.users)) parsed.users = [];
+    if (!Array.isArray(parsed.password_resets)) parsed.password_resets = [];
+    if (!Array.isArray(parsed.email_verifications)) parsed.email_verifications = [];
     return parsed;
   }
 
@@ -73,6 +80,10 @@ function createFileStore() {
       for (const user of db.users) {
         if (!user.password_hash && DEFAULT_PASSWORDS[user.email]) {
           user.password_hash = await bcrypt.hash(DEFAULT_PASSWORDS[user.email], 10);
+          changed = true;
+        }
+        if (typeof user.email_verified !== 'boolean') {
+          user.email_verified = true;
           changed = true;
         }
       }
@@ -91,6 +102,74 @@ function createFileStore() {
       db.users.unshift(payload);
       writeDb(db);
       return payload;
+    },
+    async createPasswordReset(payload) {
+      const db = ensureDb();
+      db.password_resets = [
+        payload,
+        ...db.password_resets.filter((item) => item.email !== payload.email),
+      ];
+      writeDb(db);
+      return payload;
+    },
+    async findPasswordResetByToken(token) {
+      const db = ensureDb();
+      return db.password_resets.find((item) => item.token === token) || null;
+    },
+    async deletePasswordResetByToken(token) {
+      const db = ensureDb();
+      const next = db.password_resets.filter((item) => item.token !== token);
+      db.password_resets = next;
+      writeDb(db);
+    },
+    async deletePasswordResetsByEmail(email) {
+      const db = ensureDb();
+      db.password_resets = db.password_resets.filter((item) => item.email !== email);
+      writeDb(db);
+    },
+    async updateUserPassword(email, passwordHash) {
+      const db = ensureDb();
+      const index = db.users.findIndex((item) => item.email === email);
+      if (index === -1) return null;
+      const updated = {
+        ...db.users[index],
+        password_hash: passwordHash,
+        updated_date: nowIso(),
+      };
+      db.users[index] = updated;
+      writeDb(db);
+      return updated;
+    },
+    async updateUser(email, updates) {
+      const db = ensureDb();
+      const index = db.users.findIndex((item) => item.email === email);
+      if (index === -1) return null;
+      const updated = {
+        ...db.users[index],
+        ...updates,
+        updated_date: nowIso(),
+      };
+      db.users[index] = updated;
+      writeDb(db);
+      return updated;
+    },
+    async createEmailVerification(payload) {
+      const db = ensureDb();
+      db.email_verifications = [
+        payload,
+        ...db.email_verifications.filter((item) => item.email !== payload.email),
+      ];
+      writeDb(db);
+      return payload;
+    },
+    async findEmailVerification(email) {
+      const db = ensureDb();
+      return db.email_verifications.find((item) => item.email === email) || null;
+    },
+    async deleteEmailVerification(email) {
+      const db = ensureDb();
+      db.email_verifications = db.email_verifications.filter((item) => item.email !== email);
+      writeDb(db);
     },
     async listEntities(entityName, query = {}) {
       const db = ensureDb();
@@ -206,6 +285,24 @@ function createPostgresStore() {
         )
       `);
 
+      await query(`
+        CREATE TABLE IF NOT EXISTS password_resets (
+          token TEXT PRIMARY KEY,
+          email TEXT NOT NULL,
+          expires_at TIMESTAMPTZ NOT NULL,
+          created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS email_verifications (
+          email TEXT PRIMARY KEY,
+          code TEXT NOT NULL,
+          expires_at TIMESTAMPTZ NOT NULL,
+          created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `);
+
       await seedUsersIfNeeded();
     },
     async findUserById(id) {
@@ -231,6 +328,72 @@ function createPostgresStore() {
         ],
       );
       return payload;
+    },
+    async createPasswordReset(payload) {
+      await query('DELETE FROM password_resets WHERE email = $1', [payload.email]);
+      await query(
+        `INSERT INTO password_resets (token, email, expires_at, created_date)
+         VALUES ($1, $2, $3, $4)`,
+        [payload.token, payload.email, payload.expires_at, payload.created_date || nowIso()],
+      );
+      return payload;
+    },
+    async findPasswordResetByToken(token) {
+      const result = await query(
+        'SELECT token, email, expires_at, created_date FROM password_resets WHERE token = $1 LIMIT 1',
+        [token],
+      );
+      return result.rows[0] || null;
+    },
+    async deletePasswordResetByToken(token) {
+      await query('DELETE FROM password_resets WHERE token = $1', [token]);
+    },
+    async deletePasswordResetsByEmail(email) {
+      await query('DELETE FROM password_resets WHERE email = $1', [email]);
+    },
+    async updateUserPassword(email, passwordHash) {
+      const result = await query(
+        `UPDATE users
+         SET password_hash = $2, updated_date = $3
+         WHERE email = $1
+         RETURNING *`,
+        [email, passwordHash, nowIso()],
+      );
+      return result.rows[0] || null;
+    },
+    async updateUser(email, updates) {
+      const fields = Object.entries(updates || {}).filter(([, value]) => value !== undefined);
+      if (!fields.length) return this.findUserByEmail(email);
+
+      const assignments = fields.map(([key], index) => `${key} = $${index + 2}`);
+      const values = fields.map(([, value]) => value);
+      const result = await query(
+        `UPDATE users
+         SET ${assignments.join(', ')}, updated_date = $${fields.length + 2}
+         WHERE email = $1
+         RETURNING *`,
+        [email, ...values, nowIso()],
+      );
+      return result.rows[0] || null;
+    },
+    async createEmailVerification(payload) {
+      await query('DELETE FROM email_verifications WHERE email = $1', [payload.email]);
+      await query(
+        `INSERT INTO email_verifications (email, code, expires_at, created_date)
+         VALUES ($1, $2, $3, $4)`,
+        [payload.email, payload.code, payload.expires_at, payload.created_date || nowIso()],
+      );
+      return payload;
+    },
+    async findEmailVerification(email) {
+      const result = await query(
+        'SELECT email, code, expires_at, created_date FROM email_verifications WHERE email = $1 LIMIT 1',
+        [email],
+      );
+      return result.rows[0] || null;
+    },
+    async deleteEmailVerification(email) {
+      await query('DELETE FROM email_verifications WHERE email = $1', [email]);
     },
     async listEntities(entityName, queryParams = {}) {
       const result = await query(
