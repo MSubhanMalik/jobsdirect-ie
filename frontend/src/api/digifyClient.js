@@ -76,6 +76,11 @@ const createEntityApi = (entityName) => ({
       body: JSON.stringify(updates),
     });
   },
+  async remove(id) {
+    return apiFetch(`/api/entities/${entityName}/${id}`, {
+      method: 'DELETE',
+    });
+  },
 });
 
 const auth = {
@@ -162,14 +167,68 @@ const functions = {
   },
 };
 
+const admin = {
+  async listUsers() {
+    const data = await apiFetch('/api/admin/users');
+    return normalizeEntityListResponse(data);
+  },
+  async createUser(payload = {}) {
+    return apiFetch('/api/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+  async updateUser(id, updates = {}) {
+    return apiFetch(`/api/admin/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+  },
+  async deleteUser(id) {
+    return apiFetch(`/api/admin/users/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+const payments = {
+  async listPlans() {
+    const data = await apiFetch('/api/payments/plans');
+    return normalizeEntityListResponse(data);
+  },
+  async createCheckoutSession(payload = {}) {
+    return apiFetch('/api/payments/checkout', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+  async syncCheckoutSession(sessionId) {
+    return apiFetch('/api/payments/sync-session', {
+      method: 'POST',
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+  },
+  async createPortalSession(payload = {}) {
+    return apiFetch('/api/payments/portal', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
 export const digify = {
   auth,
+  admin,
+  payments,
   entities: {
     Job: createEntityApi('Job'),
     Employer: createEntityApi('Employer'),
     Employee: createEntityApi('Employee'),
     Application: createEntityApi('Application'),
     ContactMessage: createEntityApi('ContactMessage'),
+    Payment: createEntityApi('Payment'),
+    SiteSetting: createEntityApi('SiteSetting'),
+    PageContent: createEntityApi('PageContent'),
   },
   functions,
   utils: {

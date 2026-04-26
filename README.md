@@ -84,6 +84,24 @@ DATABASE_SSL=false
 
 If your provider requires SSL, set `DATABASE_SSL=true`.
 
+Stripe Checkout:
+
+```bash
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_AUTOMATIC_TAX=false
+APP_URL=http://localhost:5173
+STRIPE_PORTAL_RETURN_URL=http://localhost:5173/dashboard
+```
+
+Webhook endpoint:
+
+```text
+POST /api/payments/webhook
+```
+
+For local Stripe testing, forward events to `http://localhost:3001/api/payments/webhook` and listen for `checkout.session.completed` plus `customer.subscription.deleted`.
+
 ## Deployment
 
 Frontend:
@@ -99,6 +117,7 @@ Backend:
 
 ## Demo Accounts
 
+- Super Admin: `superadmin@jobsdirect.ie` / `SuperAdmin123!`
 - Admin: `admin@jobsdirect.ie` / `Admin123!`
 - Employer: `sarah.murphy@lumenlabs.ie` / `Employer123!`
 - Employee: `liam.oconnor@gmail.com` / `Employee123!`

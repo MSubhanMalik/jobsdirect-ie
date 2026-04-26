@@ -1,6 +1,26 @@
 {
   "users": [
     {
+      "id": "user_hplzsu1d",
+      "email": "nano.subhani@gianteyetech.com",
+      "password_hash": "$2b$10$9hKb5JBRgJBMCmaL9W2FHOSV6z42H2weK9g2WtgmfHtbc0EcyUYn2",
+      "full_name": "Nano Subhani",
+      "role": "employer",
+      "email_verified": true,
+      "created_date": "2026-04-25T17:49:44.714Z",
+      "updated_date": "2026-04-25T17:50:03.268Z"
+    },
+    {
+      "id": "user_super_admin",
+      "email": "superadmin@jobsdirect.ie",
+      "password_hash": "$2b$10$2XOWFOGQY2X7fo6IfBYB0u1eOhzpwpcLRaazgCG.pycd0azSwUyMq",
+      "full_name": "JobsDirect Super Admin",
+      "role": "super_admin",
+      "email_verified": true,
+      "created_date": "2026-04-25T06:15:30.923Z",
+      "updated_date": "2026-04-25T06:15:30.923Z"
+    },
+    {
       "id": "user_et8dqmlp",
       "email": "karegar.cloth@gmail.com",
       "password_hash": "$2b$10$hi.GeggobVYMG8Ik6.8xS.Wd6x4RON35FTV2uaphSpNUBqWcM/Eo6",
@@ -93,11 +113,11 @@
     {
       "id": "user_4c10arn1",
       "email": "lewis.gogarty@gianteyetech.com",
-      "password_hash": "$2b$10$EPx/y9XRKJw4NPG9mSWSbua3P7USw0gi1zG972qqYh9Sjsbu7jl5C",
+      "password_hash": "$2b$10$7.2VHtboIxH3yKa74qVA6eZhDYX/6hlAowaAqsB7WPIEID5EtM5dK",
       "full_name": "Lewis Gogarty",
       "role": "employer",
       "created_date": "2026-04-15T09:36:03.286Z",
-      "updated_date": "2026-04-15T09:36:03.286Z",
+      "updated_date": "2026-04-25T17:30:13.030Z",
       "email_verified": true
     },
     {
@@ -132,6 +152,47 @@
     }
   ],
   "Employer": [
+    {
+      "id": "employer_ys339pk1",
+      "user_email": "nano.subhani@gianteyetech.com",
+      "first_name": "Nano",
+      "last_name": "Khan",
+      "company_name": "Burki AI",
+      "phone": "03005122287",
+      "verification_status": "approved",
+      "admin_review_note": "",
+      "created_by": "nano.subhani@gianteyetech.com",
+      "created_date": "2026-04-25T17:50:03.287Z",
+      "updated_date": "2026-04-25T17:55:40.921Z",
+      "date_of_birth": "",
+      "trading_name": "",
+      "company_logo_url": "",
+      "business_type": "limited_company",
+      "registered_in_ireland": true,
+      "cro_number": "11223344",
+      "employer_number": "",
+      "company_size": "small_11_50",
+      "business_activity_description": "",
+      "economic_activity_1": "",
+      "economic_activity_2": "",
+      "economic_activity_3": "",
+      "address_building": "",
+      "address_street": "",
+      "address_town": "",
+      "address_county": "",
+      "address_country": "Ireland",
+      "address_eircode": "",
+      "website": "",
+      "primary_phone_type": "landline",
+      "primary_phone": "",
+      "secondary_phone_type": "mobile",
+      "secondary_phone": "",
+      "fax": "",
+      "is_recruitment_agency": false,
+      "newsletter_opt_in": false,
+      "approval_submitted_at": "2026-04-25T17:55:12.220Z",
+      "approved_at": "2026-04-25T17:55:40.912Z"
+    },
     {
       "id": "employer_9iaouz9a",
       "user_email": "karegar.cloth@gmail.com",
@@ -208,11 +269,34 @@
       "phone": "+(353) (01) 614-4727",
       "created_by": "lewis.gogarty@gianteyetech.com",
       "created_date": "2026-04-15T09:37:22.451Z",
-      "updated_date": "2026-04-15T09:43:01.341Z",
+      "updated_date": "2026-04-25T17:34:46.365Z",
       "verification_status": "approved",
       "website": "",
-      "cro_number": "",
-      "employer_number": ""
+      "cro_number": "11223344",
+      "employer_number": "",
+      "date_of_birth": "",
+      "trading_name": "",
+      "company_logo_url": "",
+      "business_type": "limited_company",
+      "registered_in_ireland": true,
+      "company_size": "micro_0_10",
+      "business_activity_description": "",
+      "economic_activity_1": "",
+      "economic_activity_2": "",
+      "economic_activity_3": "",
+      "address_building": "",
+      "address_street": "",
+      "address_town": "",
+      "address_county": "",
+      "address_country": "Ireland",
+      "address_eircode": "",
+      "primary_phone_type": "landline",
+      "primary_phone": "",
+      "secondary_phone_type": "mobile",
+      "secondary_phone": "",
+      "fax": "",
+      "is_recruitment_agency": false,
+      "newsletter_opt_in": false
     },
     {
       "id": "emp_1",
@@ -354,10 +438,96 @@
   ],
   "Job": [
     {
+      "id": "job_63owttqg",
+      "title": "digital marketing analyst",
+      "short_description": "Callinan Coaches Limited at Kiniska,Claregalway,Galway,is looking for a digital marketing analyst. The successful candidate is responsible for analyzing statistics and looking for ways that will impro",
+      "description": "Callinan Coaches Limited at Kiniska,Claregalway,Galway,is looking for a digital marketing analyst. The successful candidate is responsible for analyzing statistics and looking for ways that will improve the company’s online marketing efforts. Also develop strategies for growth, assess new client targets and build out demand programs with the goal of generating campaign success, increasing online presence so as to bring more business to the company.Minimum 2 year of experience is required..The candidate should possess a data driven mindset. Salary is €36,606/annum on 39 hours/week.Apply with CV to : pwalsh@callinancoaches.ie",
+      "branch_name": "",
+      "job_type": "full_time",
+      "contract_type": "permanent_full_time",
+      "category": "technology",
+      "career_level": "Experienced [Non-Managerial]",
+      "sector": "",
+      "location": "Claregalway",
+      "country": "Ireland",
+      "job_start_date": "",
+      "hours_per_week": 39,
+      "positions_count": 1,
+      "remote_work_mode": "on_site",
+      "salary_mode": "fixed",
+      "salary_min": 36606,
+      "salary_max": 36606,
+      "salary_period": "annual",
+      "advertise_from": "",
+      "advertise_to": "",
+      "keep_company_confidential": false,
+      "application_method": "email",
+      "application_email": "pwalsh@callinancoaches.ie",
+      "application_phone": "",
+      "application_url": "https://jobsireland.ie/en-US/job-Details?id=2444710",
+      "application_postal_address": "",
+      "application_questions_text": "",
+      "cv_required": false,
+      "employment_permit_process_enabled": false,
+      "job_matching_enabled": false,
+      "benefits": "Health Insurance",
+      "is_featured": false,
+      "is_highlighted": false,
+      "company_name": "Burki AI",
+      "employer_id": "employer_ys339pk1",
+      "status": "approved",
+      "source": "jobsireland",
+      "jobsireland_ref": "2444710",
+      "created_by": "nano.subhani@gianteyetech.com",
+      "created_date": "2026-04-25T17:58:38.456Z",
+      "updated_date": "2026-04-25T17:59:09.852Z"
+    },
+    {
+      "id": "job_y71ns6lr",
+      "title": "Carpenter",
+      "short_description": "Looking for experienced Carpenter",
+      "description": "Tremora Limited T/A Eco Timber Systems at Carrigaline Industrial Estate, Carrgaline, Co.Cork is looking for 10 experienced carpenters. Minimum 2 years of experience is required. Must be responsible and able to work on your own initiative. Duties include preparation, measuring, cutting, sanding and finishing wood products. Other duties include constructs, repairs, and installs building frameworks and structures made from wood and other materials to create functional, long-lasting infrastructure for residential and commercial projects.Physical role including lifting & standing. Will have to meet daily & weekly production targets. Salary is €46,644 per annum for 39 hours per week. Please send CV to: dyeung333@gmail.com ",
+      "branch_name": "",
+      "job_type": "full_time",
+      "contract_type": "permanent_full_time",
+      "category": "construction",
+      "career_level": "not_required",
+      "sector": "",
+      "location": "ECO Timber Systems, UNIT 16, Carrigaline Ind Est, Carrigaline, Co. Cork, P43 YY24",
+      "country": "Ireland",
+      "job_start_date": "",
+      "remote_work_mode": "on_site",
+      "salary_mode": "fixed",
+      "salary_min": 46644,
+      "salary_period": "annual",
+      "advertise_from": "",
+      "advertise_to": "",
+      "keep_company_confidential": false,
+      "application_method": "platform",
+      "application_email": "",
+      "application_phone": "",
+      "application_url": "",
+      "application_postal_address": "",
+      "application_questions_text": "",
+      "cv_required": false,
+      "employment_permit_process_enabled": false,
+      "job_matching_enabled": false,
+      "benefits": "Insurance, Health Care ",
+      "is_featured": true,
+      "is_highlighted": false,
+      "company_name": "Crewit Resourcing Limited",
+      "employer_id": "employer_pyef7pcz",
+      "status": "approved",
+      "source": "manual",
+      "created_by": "lewis.gogarty@gianteyetech.com",
+      "created_date": "2026-04-25T17:41:10.998Z",
+      "updated_date": "2026-04-25T17:41:36.154Z"
+    },
+    {
       "id": "job_9y0737pc",
       "title": "Motor Mechanics",
       "description": "Hillfort Quarries Limited registered at Canteen Cross Shanballymore Mallow Co. Cork P51W9X4 Ireland is looking for Motor Mechanics at Garryarthur Kilfinnane Co. Limerick V35AY28 Ireland. Must be experienced as Motor Mechanic, duties include perform service, diagnosis, and repairing of vehicles using diagnostic equipment, performing vehicle health checks and follow-up reports and undertaking vehicle road tests. Salary Minimum €36605 Per Annum for 39-Hours Per Week and 2 years fixed contract.",
-      "short_description": "Hillfort Quarries Limited registered at Canteen Cross Shanballymore Mallow Co. Cork P51W9X4 Ireland is looking for Motor Mechanics at Garryarthur Kilfinnane Co. Limerick V35AY28 Ireland. Must be exper",
+      "short_description": "We are Looking for Motor Mechanic ",
       "location": "Kilfinane",
       "country": "Ireland",
       "job_type": "full_time",
@@ -369,7 +539,7 @@
       "salary_type": "fixed",
       "salary_period": "annual",
       "career_level": "Not Required",
-      "benefits": "",
+      "benefits": "Insurance, Health Care",
       "application_method": "platform",
       "application_email": "",
       "application_url": "https://jobsireland.ie/en-US/job-Details?id=2444113",
@@ -382,7 +552,7 @@
       "jobsireland_ref": "2444113",
       "created_by": "sarah.murphy@lumenlabs.ie",
       "created_date": "2026-04-22T05:45:48.951Z",
-      "updated_date": "2026-04-22T05:47:31.387Z"
+      "updated_date": "2026-04-25T06:25:29.480Z"
     },
     {
       "id": "job_36ygzvoy",
@@ -730,5 +900,288 @@
       "created_date": "2026-04-22T19:21:25.576Z"
     }
   ],
-  "email_verifications": []
+  "email_verifications": [],
+  "SiteSetting": [
+    {
+      "id": "site_settings",
+      "brand_name": "JobsDirect.ie",
+      "brand_accent": "Direct",
+      "hero_eyebrow": "Ireland's leading job platform",
+      "hero_title": "Find Your Dream Job or Hire Top Talent",
+      "hero_highlight": "in Ireland",
+      "hero_subtitle": "Connect with employers and job seekers across Ireland. Your next opportunity is just a search away.",
+      "primary_cta": "Search Jobs",
+      "employer_cta": "Post a Job",
+      "contact_email": "info@jobsdirect.ie",
+      "contact_phone": "+353 1 234 5678",
+      "office_location": "Dublin, Ireland",
+      "footer_blurb": "Ireland's premier job platform connecting talented professionals with leading employers across the country.",
+      "featured_jobs_enabled": true,
+      "employer_approval_required": true,
+      "job_approval_required": true,
+      "created_date": "2026-04-25T06:17:56.672Z",
+      "updated_date": "2026-04-25T17:54:20.658Z",
+      "auth_required": false,
+      "employer_company_form_config": {
+        "first_name": {
+          "visible": true,
+          "required": true
+        },
+        "last_name": {
+          "visible": true,
+          "required": true
+        },
+        "date_of_birth": {
+          "visible": false,
+          "required": false
+        },
+        "company_name": {
+          "visible": true,
+          "required": true
+        },
+        "trading_name": {
+          "visible": false,
+          "required": false
+        },
+        "company_logo_url": {
+          "visible": false,
+          "required": false
+        },
+        "business_type": {
+          "visible": false,
+          "required": false
+        },
+        "registered_in_ireland": {
+          "visible": false,
+          "required": false
+        },
+        "cro_number": {
+          "visible": true,
+          "required": true
+        },
+        "employer_number": {
+          "visible": true,
+          "required": false
+        },
+        "company_size": {
+          "visible": true,
+          "required": false
+        },
+        "business_activity_description": {
+          "visible": false,
+          "required": false
+        },
+        "economic_activity_1": {
+          "visible": false,
+          "required": false
+        },
+        "economic_activity_2": {
+          "visible": false,
+          "required": false
+        },
+        "economic_activity_3": {
+          "visible": false,
+          "required": false
+        },
+        "address_building": {
+          "visible": false,
+          "required": false
+        },
+        "address_street": {
+          "visible": false,
+          "required": false
+        },
+        "address_town": {
+          "visible": false,
+          "required": false
+        },
+        "address_county": {
+          "visible": false,
+          "required": false
+        },
+        "address_country": {
+          "visible": false,
+          "required": false
+        },
+        "address_eircode": {
+          "visible": false,
+          "required": false
+        },
+        "phone": {
+          "visible": true,
+          "required": true
+        },
+        "website": {
+          "visible": true,
+          "required": false
+        },
+        "primary_phone_type": {
+          "visible": false,
+          "required": false
+        },
+        "primary_phone": {
+          "visible": false,
+          "required": false
+        },
+        "secondary_phone_type": {
+          "visible": false,
+          "required": false
+        },
+        "secondary_phone": {
+          "visible": false,
+          "required": false
+        },
+        "fax": {
+          "visible": false,
+          "required": false
+        },
+        "is_recruitment_agency": {
+          "visible": false,
+          "required": false
+        },
+        "newsletter_opt_in": {
+          "visible": false,
+          "required": false
+        }
+      },
+      "employer_job_form_config": {
+        "title": {
+          "visible": true,
+          "required": true
+        },
+        "short_description": {
+          "visible": true,
+          "required": false
+        },
+        "description": {
+          "visible": true,
+          "required": true
+        },
+        "branch_name": {
+          "visible": false,
+          "required": false
+        },
+        "job_type": {
+          "visible": true,
+          "required": false
+        },
+        "contract_type": {
+          "visible": false,
+          "required": false
+        },
+        "category": {
+          "visible": true,
+          "required": false
+        },
+        "career_level": {
+          "visible": false,
+          "required": false
+        },
+        "sector": {
+          "visible": false,
+          "required": false
+        },
+        "location": {
+          "visible": true,
+          "required": true
+        },
+        "country": {
+          "visible": false,
+          "required": false
+        },
+        "job_start_date": {
+          "visible": false,
+          "required": false
+        },
+        "hours_per_week": {
+          "visible": false,
+          "required": false
+        },
+        "positions_count": {
+          "visible": false,
+          "required": false
+        },
+        "remote_work_mode": {
+          "visible": false,
+          "required": false
+        },
+        "salary_mode": {
+          "visible": false,
+          "required": false
+        },
+        "salary_min": {
+          "visible": true,
+          "required": false
+        },
+        "salary_max": {
+          "visible": true,
+          "required": false
+        },
+        "salary_period": {
+          "visible": true,
+          "required": false
+        },
+        "advertise_from": {
+          "visible": false,
+          "required": false
+        },
+        "advertise_to": {
+          "visible": false,
+          "required": false
+        },
+        "keep_company_confidential": {
+          "visible": false,
+          "required": false
+        },
+        "application_method": {
+          "visible": false,
+          "required": false
+        },
+        "application_email": {
+          "visible": false,
+          "required": false
+        },
+        "application_phone": {
+          "visible": false,
+          "required": false
+        },
+        "application_url": {
+          "visible": false,
+          "required": false
+        },
+        "application_postal_address": {
+          "visible": false,
+          "required": false
+        },
+        "application_questions_text": {
+          "visible": false,
+          "required": false
+        },
+        "cv_required": {
+          "visible": false,
+          "required": false
+        },
+        "employment_permit_process_enabled": {
+          "visible": false,
+          "required": false
+        },
+        "job_matching_enabled": {
+          "visible": false,
+          "required": false
+        },
+        "benefits": {
+          "visible": true,
+          "required": false
+        },
+        "is_featured": {
+          "visible": true,
+          "required": false
+        },
+        "is_highlighted": {
+          "visible": true,
+          "required": false
+        }
+      }
+    }
+  ]
 }

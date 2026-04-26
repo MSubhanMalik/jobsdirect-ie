@@ -5,9 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, MapPin, Briefcase, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function HeroSection() {
   const navigate = useNavigate();
+  const { appPublicSettings } = useAuth();
+  const settings = appPublicSettings?.public_settings || {};
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
   const [jobType, setJobType] = useState("");
@@ -22,13 +25,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90 text-primary-foreground">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-accent rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent rounded-full blur-3xl" />
-      </div>
-
+    <section className="relative overflow-hidden bg-primary text-primary-foreground">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36">
         <div className="max-w-3xl mx-auto text-center">
           <motion.div
@@ -38,7 +35,7 @@ export default function HeroSection() {
           >
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/20 text-accent text-sm font-medium mb-6">
               <Briefcase className="w-4 h-4" />
-              Ireland's Leading Job Platform
+              {settings.hero_eyebrow || "Ireland's Leading Job Platform"}
             </span>
           </motion.div>
 
@@ -48,9 +45,8 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6"
           >
-            Find Your Dream Job{" "}
-            <span className="text-accent">or Hire Top Talent</span>{" "}
-            in Ireland
+            {settings.hero_title || "Find Your Dream Job or Hire Top Talent"}{" "}
+            <span className="text-accent">{settings.hero_highlight || "in Ireland"}</span>
           </motion.h1>
 
           <motion.p
@@ -59,8 +55,7 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg text-primary-foreground/70 mb-10 max-w-2xl mx-auto"
           >
-            Connect with thousands of employers and job seekers across Ireland.
-            Your next opportunity is just a search away.
+            {settings.hero_subtitle || "Connect with thousands of employers and job seekers across Ireland. Your next opportunity is just a search away."}
           </motion.p>
 
           {/* Search Form */}
@@ -107,7 +102,7 @@ export default function HeroSection() {
                 className="bg-accent hover:bg-accent/90 text-accent-foreground h-12 px-8 font-semibold"
               >
                 <Search className="w-4 h-4 mr-2" />
-                Search
+                {settings.primary_cta || "Search"}
               </Button>
             </div>
           </motion.form>
@@ -124,7 +119,7 @@ export default function HeroSection() {
               className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 group"
               onClick={() => navigate("/employers")}
             >
-              Post a Job
+              {settings.employer_cta || "Post a Job"}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
             </Button>
             <span className="text-sm text-primary-foreground/50">or</span>

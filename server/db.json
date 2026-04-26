@@ -1,0 +1,191 @@
+{
+  "users": [
+    {
+      "id": "user_super_admin",
+      "email": "superadmin@jobsdirect.ie",
+      "password_hash": "$2b$10$6JpY.oHcUmcYxsk6ssNCyuAkIckEHmEJWdTeSKBZHxuf0YxDTqBrm",
+      "full_name": "JobsDirect Super Admin",
+      "role": "super_admin",
+      "email_verified": true,
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    },
+    {
+      "id": "user_admin",
+      "email": "admin@jobsdirect.ie",
+      "password_hash": "$2b$10$7AFRl3IL1bFEry3xI1lqCeunS3K2R4pzXsAuy3GuwKwwO2G2fPhzy",
+      "full_name": "JobsDirect Admin",
+      "role": "admin",
+      "email_verified": true,
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    },
+    {
+      "id": "user_employer",
+      "email": "sarah.murphy@lumenlabs.ie",
+      "password_hash": "$2b$10$vIyjR.QLjaQfBt9d2Q9qcO1/CnT5iXTd9VD.OFVOW4Jmz8Lyxq55a",
+      "full_name": "Sarah Murphy",
+      "role": "employer",
+      "email_verified": true,
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    },
+    {
+      "id": "user_employee",
+      "email": "liam.oconnor@gmail.com",
+      "password_hash": "$2b$10$zQnOp7EiWnX7Uddj3BXRre5uoBXhK616Qtm2HwG417/1QxaWiQ2C.",
+      "full_name": "Liam O'Connor",
+      "role": "employee",
+      "email_verified": true,
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    }
+  ],
+  "SiteSetting": [
+    {
+      "id": "site_settings",
+      "brand_name": "JobsDirect.ie",
+      "brand_accent": "Direct",
+      "hero_eyebrow": "Ireland's leading job platform",
+      "hero_title": "Find Your Dream Job or Hire Top Talent",
+      "hero_highlight": "in Ireland",
+      "hero_subtitle": "Connect with employers and job seekers across Ireland. Your next opportunity is just a search away.",
+      "primary_cta": "Search Jobs",
+      "employer_cta": "Post a Job",
+      "contact_email": "info@jobsdirect.ie",
+      "contact_phone": "+353 1 234 5678",
+      "office_location": "Dublin, Ireland",
+      "footer_blurb": "Ireland's premier job platform connecting talented professionals with leading employers across the country.",
+      "featured_jobs_enabled": true,
+      "employer_approval_required": true,
+      "job_approval_required": true,
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    }
+  ],
+  "Employer": [
+    {
+      "id": "emp_1",
+      "user_email": "sarah.murphy@lumenlabs.ie",
+      "first_name": "Sarah",
+      "last_name": "Murphy",
+      "company_name": "Lumen Labs",
+      "phone": "+353 87 555 1111",
+      "verification_status": "approved",
+      "approval_submitted_at": "2026-04-25T16:41:38.975Z",
+      "approved_at": "2026-04-25T16:41:38.975Z",
+      "admin_review_note": "",
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    }
+  ],
+  "Employee": [
+    {
+      "id": "cand_1",
+      "user_email": "liam.oconnor@gmail.com",
+      "first_name": "Liam",
+      "last_name": "O'Connor",
+      "phone": "+353 87 555 2222",
+      "title": "Frontend Developer",
+      "location": "Dublin",
+      "bio": "React developer with 4 years of experience building polished product experiences.",
+      "profile_completed": true,
+      "skills": "React, TypeScript, Tailwind CSS",
+      "experience_years": 4,
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    }
+  ],
+  "email_verifications": [],
+  "Job": [
+    {
+      "id": "job_1",
+      "title": "Senior Frontend Engineer",
+      "short_description": "Build performant product interfaces for a fast-growing SaaS company.",
+      "description": "Join Lumen Labs to design and deliver scalable product experiences with React and TypeScript. You will collaborate closely with product, design, and backend teams.",
+      "location": "Dublin",
+      "job_type": "full_time",
+      "category": "technology",
+      "salary_min": 70000,
+      "salary_max": 90000,
+      "salary_period": "annual",
+      "benefits": "Pension, health insurance, hybrid work, annual learning budget",
+      "company_name": "Lumen Labs",
+      "employer_id": "emp_1",
+      "status": "approved",
+      "is_featured": true,
+      "is_highlighted": true,
+      "source": "manual",
+      "created_by": "sarah.murphy@lumenlabs.ie",
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    },
+    {
+      "id": "job_2",
+      "title": "Operations Coordinator",
+      "short_description": "Coordinate day-to-day hiring and business operations.",
+      "description": "Help our team manage workflows, schedules, and operational reporting across Ireland.",
+      "location": "Cork",
+      "job_type": "full_time",
+      "category": "admin",
+      "salary_min": 36000,
+      "salary_max": 42000,
+      "salary_period": "annual",
+      "benefits": "Bonus, wellness budget, flexible working",
+      "company_name": "Northline Services",
+      "employer_id": "emp_1",
+      "status": "approved",
+      "is_featured": false,
+      "is_highlighted": false,
+      "source": "manual",
+      "created_by": "sarah.murphy@lumenlabs.ie",
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    },
+    {
+      "id": "job_3",
+      "title": "Marketing Executive",
+      "short_description": "Own growth campaigns and brand storytelling.",
+      "description": "Drive campaign planning, reporting, and content strategy for a growing B2B team.",
+      "location": "Galway",
+      "job_type": "contract",
+      "category": "marketing",
+      "salary_min": 28000,
+      "salary_max": 36000,
+      "salary_period": "annual",
+      "benefits": "Hybrid work, training budget",
+      "company_name": "Blue Harbour Media",
+      "employer_id": "emp_1",
+      "status": "pending_review",
+      "is_featured": false,
+      "is_highlighted": false,
+      "source": "manual",
+      "created_by": "sarah.murphy@lumenlabs.ie",
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    }
+  ],
+  "Application": [
+    {
+      "id": "app_1",
+      "job_id": "job_1",
+      "employee_email": "liam.oconnor@gmail.com",
+      "employer_email": "sarah.murphy@lumenlabs.ie",
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    }
+  ],
+  "ContactMessage": [
+    {
+      "id": "msg_1",
+      "name": "Aoife Brennan",
+      "email": "aoife@example.com",
+      "subject": "Partnership enquiry",
+      "message": "Interested in listing sponsored employer profiles on JobsDirect.ie.",
+      "status": "new",
+      "created_date": "2026-04-25T16:41:38.975Z",
+      "updated_date": "2026-04-25T16:41:38.975Z"
+    }
+  ],
+  "password_resets": []
+}

@@ -8,6 +8,7 @@ import { buildSeedData, nowIso } from './seed.js';
 const { Pool } = pg;
 
 const DEFAULT_PASSWORDS = {
+  'superadmin@jobsdirect.ie': 'SuperAdmin123!',
   'admin@jobsdirect.ie': 'Admin123!',
   'sarah.murphy@lumenlabs.ie': 'Employer123!',
   'liam.oconnor@gmail.com': 'Employee123!',
@@ -87,7 +88,29 @@ function createFileStore() {
           changed = true;
         }
       }
+      if (!db.users.some((user) => user.email === 'superadmin@jobsdirect.ie')) {
+        db.users.unshift({
+          id: 'user_super_admin',
+          email: 'superadmin@jobsdirect.ie',
+          password_hash: await bcrypt.hash(DEFAULT_PASSWORDS['superadmin@jobsdirect.ie'], 10),
+          full_name: 'JobsDirect Super Admin',
+          role: 'super_admin',
+          email_verified: true,
+          created_date: nowIso(),
+          updated_date: nowIso(),
+        });
+        changed = true;
+      }
+      if (!Array.isArray(db.SiteSetting) || !db.SiteSetting.some((item) => item.id === 'site_settings')) {
+        const defaults = buildSeedData().SiteSetting?.[0];
+        db.SiteSetting = defaults ? [defaults, ...(db.SiteSetting || [])] : (db.SiteSetting || []);
+        changed = true;
+      }
       if (changed) writeDb(db);
+    },
+    async listUsers() {
+      const db = ensureDb();
+      return sortItems(db.users, '-created_date');
     },
     async findUserById(id) {
       const db = ensureDb();
@@ -153,6 +176,27 @@ function createFileStore() {
       writeDb(db);
       return updated;
     },
+    async updateUserById(id, updates) {
+      const db = ensureDb();
+      const index = db.users.findIndex((item) => item.id === id);
+      if (index === -1) return null;
+      const updated = {
+        ...db.users[index],
+        ...updates,
+        updated_date: nowIso(),
+      };
+      db.users[index] = updated;
+      writeDb(db);
+      return updated;
+    },
+    async deleteUserById(id) {
+      const db = ensureDb();
+      const existing = db.users.find((item) => item.id === id);
+      if (!existing) return null;
+      db.users = db.users.filter((item) => item.id !== id);
+      writeDb(db);
+      return existing;
+    },
     async createEmailVerification(payload) {
       const db = ensureDb();
       db.email_verifications = [
@@ -196,6 +240,15 @@ function createFileStore() {
       db[entityName] = collection;
       writeDb(db);
       return updated;
+    },
+    async deleteEntity(entityName, id) {
+      const db = ensureDb();
+      const collection = db[entityName] || [];
+      const existing = collection.find((item) => item.id === id);
+      if (!existing) return null;
+      db[entityName] = collection.filter((item) => item.id !== id);
+      writeDb(db);
+      return existing;
     },
   };
 }
@@ -258,6 +311,51 @@ function createPostgresStore() {
     }
   }
 
+  async function ensureSuperAdminUser() {
+    const existing = await query('SELECT id FROM users WHERE email = $1 LIMIT 1', ['superadmin@jobsdirect.ie']);
+    if (existing.rows[0]) return;
+
+    await query(
+      `INSERT INTO users (id, email, password_hash, full_name, role, email_verified, created_date, updated_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        'user_super_admin',
+        'superadmin@jobsdirect.ie',
+        await bcrypt.hash(DEFAULT_PASSWORDS['superadmin@jobsdirect.ie'], 10),
+        'JobsDirect Super Admin',
+        'super_admin',
+        true,
+        nowIso(),
+        nowIso(),
+      ],
+    );
+  }
+
+  async function ensureDefaultSiteSettings() {
+    const existing = await query(
+      'SELECT record_id FROM entity_records WHERE entity_name = $1 AND record_id = $2 LIMIT 1',
+      ['SiteSetting', 'site_settings'],
+    );
+    if (existing.rows[0]) return;
+
+    const settings = buildSeedData().SiteSetting?.[0];
+    if (!settings) return;
+
+    await query(
+      `INSERT INTO entity_records (entity_name, record_id, payload, created_date, updated_date, created_by)
+       VALUES ($1, $2, $3::jsonb, $4, $5, $6)
+       ON CONFLICT (entity_name, record_id) DO NOTHING`,
+      [
+        'SiteSetting',
+        settings.id,
+        JSON.stringify(settings),
+        settings.created_date || nowIso(),
+        settings.updated_date || nowIso(),
+        null,
+      ],
+    );
+  }
+
   return {
     mode: 'postgres',
     async init() {
@@ -309,6 +407,8 @@ function createPostgresStore() {
       `);
 
       await seedUsersIfNeeded();
+      await ensureSuperAdminUser();
+      await ensureDefaultSiteSettings();
 
       // Backfill legacy users created before email verification existed.
       // If they have no pending verification record, treat them as already verified.
@@ -318,6 +418,10 @@ function createPostgresStore() {
         WHERE email_verified = FALSE
           AND email NOT IN (SELECT email FROM email_verifications)
       `);
+    },
+    async listUsers() {
+      const result = await query('SELECT * FROM users ORDER BY created_date DESC');
+      return result.rows;
     },
     async findUserById(id) {
       const result = await query('SELECT * FROM users WHERE id = $1 LIMIT 1', [id]);
@@ -329,14 +433,15 @@ function createPostgresStore() {
     },
     async createUser(payload) {
       await query(
-        `INSERT INTO users (id, email, password_hash, full_name, role, created_date, updated_date)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        `INSERT INTO users (id, email, password_hash, full_name, role, email_verified, created_date, updated_date)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           payload.id,
           payload.email,
           payload.password_hash,
           payload.full_name,
           payload.role,
+          Boolean(payload.email_verified),
           payload.created_date,
           payload.updated_date,
         ],
@@ -388,6 +493,25 @@ function createPostgresStore() {
          RETURNING *`,
         [email, ...values, nowIso()],
       );
+      return result.rows[0] || null;
+    },
+    async updateUserById(id, updates) {
+      const fields = Object.entries(updates || {}).filter(([, value]) => value !== undefined);
+      if (!fields.length) return this.findUserById(id);
+
+      const assignments = fields.map(([key], index) => `${key} = $${index + 2}`);
+      const values = fields.map(([, value]) => value);
+      const result = await query(
+        `UPDATE users
+         SET ${assignments.join(', ')}, updated_date = $${fields.length + 2}
+         WHERE id = $1
+         RETURNING *`,
+        [id, ...values, nowIso()],
+      );
+      return result.rows[0] || null;
+    },
+    async deleteUserById(id) {
+      const result = await query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
       return result.rows[0] || null;
     },
     async createEmailVerification(payload) {
@@ -451,6 +575,15 @@ function createPostgresStore() {
         [entityName, id, JSON.stringify(updated), updated.updated_date],
       );
       return updated;
+    },
+    async deleteEntity(entityName, id) {
+      const result = await query(
+        `DELETE FROM entity_records
+         WHERE entity_name = $1 AND record_id = $2
+         RETURNING payload`,
+        [entityName, id],
+      );
+      return result.rows[0]?.payload || null;
     },
   };
 }

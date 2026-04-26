@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { digify } from "@/api/digifyClient";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/lib/AuthContext";
+import { COMPANY_FIELDS, hasFieldValue } from "@/lib/siteSettings";
 import {
   Briefcase, Plus, CreditCard, Users, FileText, Eye,
-  CheckCircle, Clock, XCircle, LogOut, ShieldAlert, Lock
+  CheckCircle, Clock, XCircle, LogOut, ShieldAlert, Lock, Loader2
 } from "lucide-react";
 import JobPostForm from "./JobPostForm";
 import EmployerProfile from "./EmployerProfile";
@@ -48,27 +50,39 @@ function getVerificationMeta(employer) {
   }
 }
 
-function isProfileReadyForSubmission(employer) {
-  return Boolean(
-    employer?.first_name &&
-    employer?.last_name &&
-    employer?.company_name &&
-    employer?.phone &&
-    employer?.date_of_birth &&
-    employer?.website &&
-    employer?.cro_number &&
-    employer?.employer_number
-  );
+function isProfileReadyForSubmission(employer, companyFormConfig = {}) {
+  const configurableFields = COMPANY_FIELDS.filter((field) => !field.adminOnly && field.manageInEmployerForm !== false);
+
+  return configurableFields
+    .filter((field) => companyFormConfig?.[field.key]?.visible !== false && companyFormConfig?.[field.key]?.required)
+    .every((field) => hasFieldValue(field, employer?.[field.key]));
+}
+
+function formatPlanPrice(plan) {
+  const amount = Number(plan.amount || 0) / 100;
+  const formatted = new Intl.NumberFormat("en-IE", {
+    style: "currency",
+    currency: String(plan.currency || "eur").toUpperCase(),
+    maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  }).format(amount);
+  return plan.interval ? `${formatted}/${plan.interval}` : formatted;
 }
 
 export default function EmployerDashboard({ user, employer, setEmployer }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { appPublicSettings } = useAuth();
+  const publicSettings = appPublicSettings?.public_settings || {};
+  const companyFormConfig = publicSettings.employer_company_form_config || {};
+  const approvalRequired = publicSettings.employer_approval_required !== false;
   const [showJobForm, setShowJobForm] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [submittingVerification, setSubmittingVerification] = useState(false);
+  const [checkoutPlanId, setCheckoutPlanId] = useState(null);
   const formContainerRef = useRef(null);
   const queryClient = useQueryClient();
+  const isApproved = !approvalRequired || employer.verification_status === "approved";
 
   const { data: jobs = [] } = useQuery({
     queryKey: ["employer-jobs", user.email],
@@ -80,22 +94,65 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
     queryFn: () => digify.entities.Application.filter({ employer_email: user.email }, "-created_date"),
   });
 
-  const isApproved = employer.verification_status === "approved";
-  const profileReady = isProfileReadyForSubmission(employer);
+  const { data: paymentPlans = [] } = useQuery({
+    queryKey: ["payment-plans"],
+    queryFn: () => digify.payments.listPlans(),
+    enabled: isApproved,
+  });
+
+  const profileReady = isProfileReadyForSubmission(employer, companyFormConfig);
   const verificationMeta = getVerificationMeta(employer);
   const activeJobs = jobs.filter((j) => j.status === "approved");
   const pendingJobs = jobs.filter((j) => j.status === "pending_review");
+  const creditPlans = paymentPlans.filter((plan) => plan.kind === "credits");
+  const subscriptionPlans = paymentPlans.filter((plan) => plan.kind === "candidate_database");
 
   useEffect(() => {
     if (!showJobForm || !editingJob || !formContainerRef.current) return;
     formContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [showJobForm, editingJob]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const payment = params.get("payment");
+    const sessionId = params.get("session_id");
+
+    if (payment === "cancelled") {
+      toast({ title: "Payment cancelled", description: "No charge was made." });
+      navigate("/dashboard", { replace: true });
+      return;
+    }
+
+    if (payment !== "success" || !sessionId) return;
+
+    setCheckoutPlanId("syncing");
+    digify.payments.syncCheckoutSession(sessionId)
+      .then((result) => {
+        if (result.employer) setEmployer(result.employer);
+        queryClient.invalidateQueries({ queryKey: ["employer-jobs", user.email] });
+        toast({
+          title: result.success ? "Payment complete" : "Payment received",
+          description: result.success ? "Your account has been updated." : "Stripe is still confirming this payment.",
+        });
+      })
+      .catch((error) => {
+        toast({
+          title: "Could not confirm payment",
+          description: error.message || "Please refresh your dashboard in a moment.",
+          variant: "destructive",
+        });
+      })
+      .finally(() => {
+        setCheckoutPlanId(null);
+        navigate("/dashboard", { replace: true });
+      });
+  }, [location.search, navigate, queryClient, setEmployer, toast, user.email]);
+
   const handleSubmitForVerification = async () => {
     if (!profileReady) {
       toast({
         title: "Complete your profile first",
-        description: "Add your contact details, website, CRO number, employer number, and date of birth before submitting for verification.",
+        description: "Please complete all required company fields before submitting for verification.",
         variant: "destructive",
       });
       return;
@@ -104,17 +161,51 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
     setSubmittingVerification(true);
     try {
       const updated = await digify.entities.Employer.update(employer.id, {
-        verification_status: "pending",
+        verification_status: approvalRequired ? "pending" : "approved",
         admin_review_note: "",
         approval_submitted_at: new Date().toISOString(),
+        approved_at: approvalRequired ? employer.approved_at : new Date().toISOString(),
       });
       setEmployer(updated);
       toast({
-        title: "Submitted for Verification",
-        description: "Your employer account is now pending admin approval.",
+        title: approvalRequired ? "Submitted for Verification" : "Employer Account Active",
+        description: approvalRequired ? "Your employer account is now pending admin approval." : "Your employer account has full access.",
       });
     } finally {
       setSubmittingVerification(false);
+    }
+  };
+
+  const handleCheckout = async (planId) => {
+    setCheckoutPlanId(planId);
+    try {
+      const session = await digify.payments.createCheckoutSession({
+        plan_id: planId,
+        employer_id: employer.id,
+      });
+      window.location.assign(session.url);
+    } catch (error) {
+      toast({
+        title: "Checkout unavailable",
+        description: error.message || "Stripe checkout could not be started.",
+        variant: "destructive",
+      });
+      setCheckoutPlanId(null);
+    }
+  };
+
+  const handleBillingPortal = async () => {
+    setCheckoutPlanId("portal");
+    try {
+      const session = await digify.payments.createPortalSession({ employer_id: employer.id });
+      window.location.assign(session.url);
+    } catch (error) {
+      toast({
+        title: "Billing portal unavailable",
+        description: error.message || "Stripe billing portal could not be opened.",
+        variant: "destructive",
+      });
+      setCheckoutPlanId(null);
     }
   };
 
@@ -242,6 +333,7 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
             <TabsTrigger value="profile">Profile Setup</TabsTrigger>
             {isApproved && <TabsTrigger value="jobs">My Jobs</TabsTrigger>}
             {isApproved && <TabsTrigger value="applications">Applications</TabsTrigger>}
+            {isApproved && <TabsTrigger value="billing">Billing</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="overview">
@@ -412,6 +504,99 @@ export default function EmployerDashboard({ user, employer, setEmployer }) {
                     </Card>
                   ))
                 )}
+              </div>
+            </TabsContent>
+          )}
+
+          {isApproved && (
+            <TabsContent value="billing">
+              <div className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Card>
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Available credits</p>
+                          <p className="mt-1 text-3xl font-bold">{employer.credits || 0}</p>
+                        </div>
+                        <div className="w-11 h-11 rounded-lg bg-accent/10 flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-accent" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Candidate database</p>
+                          <p className="mt-1 text-lg font-semibold">
+                            {employer.candidate_database_access ? "Active" : "Not active"}
+                          </p>
+                        </div>
+                        <Badge variant={employer.candidate_database_access ? "default" : "secondary"}>
+                          {employer.candidate_database_status || "inactive"}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div>
+                  <h2 className="text-lg font-semibold mb-4">Buy credits</h2>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    {creditPlans.map((plan) => (
+                      <Card key={plan.id}>
+                        <CardContent className="p-5 space-y-4">
+                          <div>
+                            <p className="font-semibold">{plan.label}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
+                          </div>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-xl font-bold">{formatPlanPrice(plan)}</span>
+                            <Button onClick={() => handleCheckout(plan.id)} disabled={Boolean(checkoutPlanId)}>
+                              {checkoutPlanId === plan.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                              Buy
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-lg font-semibold mb-4">Subscriptions</h2>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {subscriptionPlans.map((plan) => (
+                      <Card key={plan.id}>
+                        <CardContent className="p-5 space-y-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="font-semibold">{plan.label}</p>
+                              <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
+                            </div>
+                            <Badge variant={employer.candidate_database_access ? "default" : "secondary"}>
+                              {employer.candidate_database_access ? "Active" : "Available"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-xl font-bold">{formatPlanPrice(plan)}</span>
+                            <Button
+                              variant={employer.candidate_database_access ? "outline" : "default"}
+                              onClick={() => employer.candidate_database_access ? handleBillingPortal() : handleCheckout(plan.id)}
+                              disabled={Boolean(checkoutPlanId)}
+                            >
+                              {checkoutPlanId === plan.id || checkoutPlanId === "syncing" || checkoutPlanId === "portal" ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                              {employer.candidate_database_access ? "Manage" : "Subscribe"}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
               </div>
             </TabsContent>
           )}

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Briefcase, Mail, Phone, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/AuthContext";
 
 const footerLinks = {
   Platform: [
@@ -23,6 +24,10 @@ const footerLinks = {
 };
 
 export default function Footer() {
+  const { appPublicSettings } = useAuth();
+  const settings = appPublicSettings?.public_settings || {};
+  const brandName = settings.brand_name || "JobsDirect.ie";
+
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,24 +40,24 @@ export default function Footer() {
                 <Briefcase className="w-5 h-5 text-accent-foreground" />
               </div>
               <span className="text-xl font-bold">
-                Jobs<span className="text-accent">Direct</span>.ie
+                {brandName}
               </span>
             </Link>
             <p className="text-primary-foreground/70 text-sm leading-relaxed mb-6 max-w-sm">
-              Ireland's premier job platform connecting talented professionals with leading employers across the country.
+              {settings.footer_blurb || "Ireland's premier job platform connecting talented professionals with leading employers across the country."}
             </p>
             <div className="space-y-2 text-sm text-primary-foreground/60">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <span>info@jobsdirect.ie</span>
+                <span>{settings.contact_email || "info@jobsdirect.ie"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>+353 1 234 5678</span>
+                <span>{settings.contact_phone || "+353 1 234 5678"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                <span>Dublin, Ireland</span>
+                <span>{settings.office_location || "Dublin, Ireland"}</span>
               </div>
             </div>
           </div>
@@ -101,7 +106,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="py-6 border-t border-primary-foreground/10 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-primary-foreground/50">
-            © {new Date().getFullYear()} JobsDirect.ie. All rights reserved.
+            © {new Date().getFullYear()} {brandName}. All rights reserved.
           </p>
           <div className="flex gap-4 text-xs text-primary-foreground/50">
             <Link to="/privacy" className="hover:text-accent transition-colors">Privacy</Link>

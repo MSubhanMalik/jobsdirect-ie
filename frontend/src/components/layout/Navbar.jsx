@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X, Briefcase, Search } from "lucide-react";
+import { Menu, Briefcase, Search } from "lucide-react";
 import { digify } from "@/api/digifyClient";
+import { useAuth } from "@/lib/AuthContext";
 
 const navLinks = [
   { label: "Home", path: "/" },
@@ -15,21 +16,13 @@ const navLinks = [
 
 export default function Navbar() {
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const { isAuthenticated, user, appPublicSettings } = useAuth();
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    digify.auth.isAuthenticated().then(async (authed) => {
-      setIsAuthenticated(authed);
-      if (authed) {
-        const me = await digify.auth.me();
-        setUser(me);
-      }
-    });
-  }, []);
+  const settings = appPublicSettings?.public_settings || {};
+  const brandName = settings.brand_name || "JobsDirect.ie";
 
   const isActive = (path) => location.pathname === path;
+  const dashboardPath = user?.role === "admin" || user?.role === "super_admin" ? "/admin" : "/dashboard";
 
   return (
     <header className="sticky top-0 z-50 w-full bg-card/80 backdrop-blur-xl border-b border-border/50">
@@ -41,7 +34,7 @@ export default function Navbar() {
               <Briefcase className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold text-foreground tracking-tight">
-              Jobs<span className="text-accent">Direct</span>.ie
+              {brandName}
             </span>
           </Link>
 
@@ -70,7 +63,7 @@ export default function Navbar() {
               </Button>
             </Link>
             {isAuthenticated ? (
-              <Link to={user?.role === "admin" ? "/admin" : "/dashboard"}>
+              <Link to={dashboardPath}>
                 <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
                   Dashboard
                 </Button>
@@ -109,7 +102,7 @@ export default function Navbar() {
                       <Briefcase className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <span className="text-xl font-bold">
-                      Jobs<span className="text-accent">Direct</span>.ie
+                      {brandName}
                     </span>
                   </div>
                 </div>
@@ -131,7 +124,7 @@ export default function Navbar() {
                 </nav>
                 <div className="p-4 border-t border-border space-y-2">
                   {isAuthenticated ? (
-                    <Link to="/dashboard" onClick={() => setOpen(false)}>
+                    <Link to={dashboardPath} onClick={() => setOpen(false)}>
                       <Button className="w-full bg-primary">Dashboard</Button>
                     </Link>
                   ) : (
